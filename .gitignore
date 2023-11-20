@@ -4,3 +4,7 @@ src/__pycache__/__init__.cpython-38.pyc
 src/__pycache__/EpsilonScheduler.cpython-38.pyc
 tests/__pycache__/__init__.cpython-38.pyc
 tests/__pycache__/test_EpsilonScheduler.cpython-38.pyc
+src/__pycache__/__init__.cpython-311.pyc
+src/__pycache__/EpsilonScheduler.cpython-311.pyc
+tests/__pycache__/__init__.cpython-311.pyc
+tests/__pycache__/test_EpsilonScheduler.cpython-311.pyc
