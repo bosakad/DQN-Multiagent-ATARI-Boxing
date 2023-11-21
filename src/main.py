@@ -1,69 +1,120 @@
 import gymnasium as gym
 import math
 import random
-import matplotlib
 import matplotlib.pyplot as plt
-from collections import namedtuple, deque
 from itertools import count
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 
 # custom modules
 from DQN import DQN
 from ReplayBuffer import ReplayBuffer   
+from Optimize import optimize_model
+from Plotter import plot_durations
 
-env = gym.make("CartPole-v1")
+def train_cartPole():
 
-# set up matplotlib
-is_ipython = 'inline' in matplotlib.get_backend()
-if is_ipython:
-    from IPython import display
+    # set up the environment
+    env = gym.make("CartPole-v1")
 
-plt.ion()
-
-# if GPU is to be used
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Device: ", torch.cuda.get_device_name(device))
+    # if GPU is to be used
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Device: ", torch.cuda.get_device_name(device))
 
 
+    # Hyperparameters
+    BATCH_SIZE = 128
+    GAMMA = 0.99
+    EPS_START = 0.9
+    EPS_END = 0.05
+    EPS_DECAY = 1000
+    TAU = 0.005
+    LR = 1e-4
+
+    # Get number of actions from gym action space
+    n_actions = env.action_space.n
+    # Get the number of state observations
+    state, info = env.reset()
+    n_observations = len(state)
+
+    policy_net = DQN(n_observations, n_actions).to(device)
+    target_net = DQN(n_observations, n_actions).to(device)
+    target_net.load_state_dict(policy_net.state_dict())
+
+    optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
+    memory = ReplayBuffer(10000)
+
+
+    steps_done = 0
+    episode_durations = []
+
+
+    if torch.cuda.is_available():
+        num_episodes = 200
+    else:
+        num_episodes = 50
+
+    for i_episode in range(num_episodes):
+        
+        # Initialize the environment and get it's state
+        state, info = env.reset()
+        state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+
+        # for each episode, run the simulation until it's done
+        for t in count():
+            action = select_action(state, EPS_END, EPS_START, EPS_DECAY, device, env, policy_net, steps_done)
+            observation, reward, terminated, truncated, _ = env.step(action.item())
+            reward = torch.tensor([reward], device=device)
+            done = terminated or truncated
+            steps_done += 1
+
+            if terminated:
+                next_state = None
+            else:
+                next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
+
+            # Store the transition in memory
+            memory.push(state, action, next_state, reward)
+
+            # Move to the next state
+            state = next_state
+
+            # Perform one step of the optimization (on the policy network) once in a while
+            if t + 1 % 4 == 0:
+                optimize_model(memory, BATCH_SIZE, GAMMA, policy_net, target_net, optimizer, device)
+
+            # Soft update of the target network's weights
+            # θ′ ← τ θ + (1 −τ )θ′
+            if t + 1 % 100 == 0:
+                target_net_state_dict = target_net.state_dict()
+                policy_net_state_dict = policy_net.state_dict()
+                for key in policy_net_state_dict:
+                    target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
+                target_net.load_state_dict(target_net_state_dict)
+
+
+            if done:
+                episode_durations.append(t + 1)
+                plot_durations(episode_durations=episode_durations)
+                break
+
+    print('Complete')
+    plot_durations(show_result=True, episode_durations=episode_durations)
+    plt.ioff()
+    plt.show()
 
 
 
+def select_action(state, EPS_END, EPS_START, EPS_DECAY, device, env, policy_net, steps_done):
+    """
+    Epsilon greedy policy
+    """
 
-BATCH_SIZE = 128
-GAMMA = 0.99
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 1000
-TAU = 0.005
-LR = 1e-4
-
-# Get number of actions from gym action space
-n_actions = env.action_space.n
-# Get the number of state observations
-state, info = env.reset()
-n_observations = len(state)
-
-policy_net = DQN(n_observations, n_actions).to(device)
-target_net = DQN(n_observations, n_actions).to(device)
-target_net.load_state_dict(policy_net.state_dict())
-
-optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
-memory = ReplayBuffer(10000)
-
-
-steps_done = 0
-
-
-def select_action(state):
-    global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
-    steps_done += 1
+    
     if sample > eps_threshold:
         with torch.no_grad():
             # t.max(1) will return the largest column value of each row.
@@ -74,30 +125,5 @@ def select_action(state):
         return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
 
 
-episode_durations = []
-
-
-def plot_durations(show_result=False):
-    plt.figure(1)
-    durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    if show_result:
-        plt.title('Result')
-    else:
-        plt.clf()
-        plt.title('Training...')
-    plt.xlabel('Episode')
-    plt.ylabel('Duration')
-    plt.plot(durations_t.numpy())
-    # Take 100 episode averages and plot them too
-    if len(durations_t) >= 100:
-        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
-        means = torch.cat((torch.zeros(99), means))
-        plt.plot(means.numpy())
-
-    plt.pause(0.001)  # pause a bit so that plots are updated
-    if is_ipython:
-        if not show_result:
-            display.display(plt.gcf())
-            display.clear_output(wait=True)
-        else:
-            display.display(plt.gcf())
+if __name__ == "__main__":
+    train_cartPole()
