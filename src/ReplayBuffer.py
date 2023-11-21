@@ -7,7 +7,7 @@ Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
 
-class ReplayMemory(object):
+class ReplayBuffer(object):
     """Cyclic Replay Memory that stores the transitions"""
 
     def __init__(self, capacity, importanceSampling=False):
