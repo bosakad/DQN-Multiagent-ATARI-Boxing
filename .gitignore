@@ -9,3 +9,9 @@ src/__pycache__/EpsilonScheduler.cpython-311.pyc
 tests/__pycache__/__init__.cpython-311.pyc
 tests/__pycache__/test_EpsilonScheduler.cpython-311.pyc
 src/__pycache__/EnvPreprocess.cpython-38.pyc
+src/__pycache__/DQN_rainbox.cpython-311.pyc
+src/__pycache__/NoisyLinear.cpython-311.pyc
+src/__pycache__/PrioritizedReplayBuffer.cpython-311.pyc
+src/__pycache__/ReplayBuffer.cpython-311.pyc
+src/__pycache__/segment_tree.cpython-311.pyc
+src/videos/rainbow/rl-video-episode-0.meta.json
