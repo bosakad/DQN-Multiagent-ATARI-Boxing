@@ -17,3 +17,5 @@ pip install -r requirements.txt
 Installation of ROMs: https://pettingzoo.farama.org/environments/atari/#installation
 
 Note: You might have to downgrade Python to 3.8.18.
+
+Test
