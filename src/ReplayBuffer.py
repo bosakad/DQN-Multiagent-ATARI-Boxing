@@ -8,7 +8,7 @@ Transition = namedtuple('Transition',
 
 
 class ReplayMemory(object):
-    """Replay Memory that stores the transitions"""
+    """Cyclic Replay Memory that stores the transitions"""
 
     def __init__(self, capacity):
         self.memory = deque([], maxlen=capacity)
