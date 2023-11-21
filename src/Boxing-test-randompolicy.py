@@ -10,8 +10,6 @@ env = preprocess_boxing(env)
 
 observations, infos = env.reset()
 
-# print(env.action_space("first_0").sample())
-# print(env.agents)
 
 print(observations["first_0"].shape)
 # actions = {"first_0": 17, "second_0": 0} # test out different actions
@@ -25,23 +23,26 @@ while env.agents:
     
     observations, rewards, terminations, truncations, _ = env.step(actions)
 
-    # show the observation every 100 steps
+    # show the observation every x steps
     if i % 1000 == 20:
 
-        obs1 = observations["first_0"]
-        plt.imshow(obs1[:, :, 0], cmap="gray")
-        plt.show()
-        plt.imshow(obs1[:, :, 1], cmap="gray")
-        plt.show()
-        plt.imshow(obs1[:, :, 2], cmap="gray")
-        plt.show()
-        plt.imshow(obs1[:, :, 3], cmap="gray")
-        plt.show()
+        pass
+    
+        # uncomment to the observation
+        # obs1 = observations["first_0"]
+        # plt.imshow(obs1[:, :, 0], cmap="gray")
+        # plt.show()
+        # plt.imshow(obs1[:, :, 1], cmap="gray")
+        # plt.show()
+        # plt.imshow(obs1[:, :, 2], cmap="gray")
+        # plt.show()
+        # plt.imshow(obs1[:, :, 3], cmap="gray")
+        # plt.show()
 
-        print(obs1)
 
     i += 1
 
+# number of frames taken
 print(i)
 
 env.close()
