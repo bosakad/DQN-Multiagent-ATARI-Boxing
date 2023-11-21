@@ -2,11 +2,12 @@ from pettingzoo.atari import boxing_v2
 import matplotlib.pyplot as plt
 from EnvPreprocess import preprocess_boxing
 
-env = boxing_v2.parallel_env(render_mode="human") # remove the render_mode not to render
-# env = boxing_v2.parallel_env() 
+# env = boxing_v2.parallel_env(render_mode="human") # remove the render_mode not to render
+env = boxing_v2.parallel_env() 
 
 # preprocess the environment
 env = preprocess_boxing(env)
+
 
 observations, infos = env.reset()
 
@@ -24,14 +25,14 @@ while env.agents:
     observations, rewards, terminations, truncations, _ = env.step(actions)
 
     # show the observation every x steps
-    if i % 1000 == 20:
+    # if i % 1000 == 20:
 
-        pass
+        # pass
     
         # uncomment to the observation
-        # obs1 = observations["first_0"]
-        # plt.imshow(obs1[:, :, 0], cmap="gray")
-        # plt.show()
+    obs1 = observations["first_0"]
+    plt.imshow(obs1[:, :, 0], cmap="gray")
+    plt.show()
         # plt.imshow(obs1[:, :, 1], cmap="gray")
         # plt.show()
         # plt.imshow(obs1[:, :, 2], cmap="gray")

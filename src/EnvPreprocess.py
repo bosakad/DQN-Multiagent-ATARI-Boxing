@@ -10,7 +10,7 @@ def preprocess_boxing(env, width = 112, height = 147):
 
     :return: the preprocessed environment
 
-    NOTE: Final observation space: (height, width, 4 - number of frames stacked)
+    NOTE: Final observation space: (height, width, 4 = number of frames stacked)
     """
 
 

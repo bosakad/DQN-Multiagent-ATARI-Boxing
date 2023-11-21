@@ -3,11 +3,11 @@ import torch
 import matplotlib
 
 # set up matplotlib display
-is_ipython = 'inline' in matplotlib.get_backend()
-if is_ipython:
-    from IPython import display
+# is_ipython = 'inline' in matplotlib.get_backend()
+# if is_ipython:
+#     from IPython import display
 
-plt.ion()
+# plt.ion()
 
 # plot a continous plot
 def plot_durations(show_result=False, episode_durations=None):
