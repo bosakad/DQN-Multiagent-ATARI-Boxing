@@ -12,6 +12,7 @@ from DQN import DQN
 from ReplayBuffer import ReplayBuffer   
 from Optimize import optimize_model
 from Plotter import plot_durations
+from EpsilonScheduler import EpsilonScheduler
 
 def train_cartPole():
 
@@ -45,6 +46,8 @@ def train_cartPole():
     optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
     memory = ReplayBuffer(10000)
 
+    # initilize the epsilon scheduler
+    epsScheduler = EpsilonScheduler(EPS_START, EPS_END, EPS_DECAY)
 
     steps_done = 0
     episode_durations = []
@@ -63,7 +66,7 @@ def train_cartPole():
 
         # for each episode, run the simulation until it's done
         for t in count():
-            action = select_action(state, EPS_END, EPS_START, EPS_DECAY, device, env, policy_net, steps_done)
+            action = select_action(state, device, env, policy_net, epsScheduler.value(steps_done))
             observation, reward, terminated, truncated, _ = env.step(action.item())
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
@@ -106,21 +109,19 @@ def train_cartPole():
 
 
 
-def select_action(state, EPS_END, EPS_START, EPS_DECAY, device, env, policy_net, steps_done):
+def select_action(state, device, env, policy_net, eps_threshold=None):
     """
     Epsilon greedy policy
     """
 
     sample = random.random()
-    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * steps_done / EPS_DECAY)
     
+    # greedy action
     if sample > eps_threshold:
         with torch.no_grad():
-            # t.max(1) will return the largest column value of each row.
-            # second column on max result is index of where max element was
-            # found, so we pick action with the larger expected reward.
             return policy_net(state).max(1).indices.view(1, 1)
+    
+    # random action
     else:
         return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
 
