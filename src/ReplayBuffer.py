@@ -10,15 +10,22 @@ Transition = namedtuple('Transition',
 class ReplayMemory(object):
     """Cyclic Replay Memory that stores the transitions"""
 
-    def __init__(self, capacity):
+    def __init__(self, capacity, importanceSampling=False):
         self.memory = deque([], maxlen=capacity)
+        self.importanceSampling = importanceSampling
 
     def push(self, *args):
         """Save a transition"""
         self.memory.append(Transition(*args))
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+
+        if not self.importanceSampling:
+            return random.sample(self.memory, batch_size) # return random
+        
+        else:
+            # TODO: implement importance sampling
+            pass
 
     def __len__(self):
         return len(self.memory)
