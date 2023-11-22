@@ -20,7 +20,7 @@ class Network(nn.Module):
         self.out_dim = out_dim
         self.atom_size = atom_size
 
-        # set common feature layer
+        # set common feature layer - TODO: remove this and out convs instead(https://github.com/Kaixhin/Rainbow/blob/1745b184c3dfc03d4ffa3ce2342ced9996b39a60/model.py#L49)
         self.feature_layer = nn.Sequential(
             nn.Linear(in_dim, 128), 
             nn.ReLU(),
@@ -43,7 +43,10 @@ class Network(nn.Module):
     
     def dist(self, x: torch.Tensor) -> torch.Tensor:
         """Get distribution for atoms."""
-        feature = self.feature_layer(x)
+
+        feature = self.feature_layer(x) # TODO: put convs instead of FC 
+        
+        
         adv_hid = F.relu(self.advantage_hidden_layer(feature))
         val_hid = F.relu(self.value_hidden_layer(feature))
         
