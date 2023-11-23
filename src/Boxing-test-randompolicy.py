@@ -4,7 +4,7 @@ from EnvPreprocess import preprocess_boxing
 import torch
 
 # env = boxing_v2.parallel_env(render_mode="human") # remove the render_mode not to render
-env = boxing_v2.parallel_env() 
+env = boxing_v2.parallel_env(auto_rom_install_path="../ROMS")
 
 # preprocess the environment
 env = preprocess_boxing(env)
