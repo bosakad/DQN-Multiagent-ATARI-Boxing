@@ -5,6 +5,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from NoisyLinear import NoisyLinear
 
+# TODO: redo the network such that the agents share the convolutional layers, but have seperate FF layers:) 
+
 class Network(nn.Module):
     def __init__(
         self, 
@@ -21,10 +23,15 @@ class Network(nn.Module):
         self.atom_size = atom_size
 
         # set common feature layer - TODO: remove this and out convs instead(https://github.com/Kaixhin/Rainbow/blob/1745b184c3dfc03d4ffa3ce2342ced9996b39a60/model.py#L49)
-        self.feature_layer = nn.Sequential(
-            nn.Linear(in_dim, 128), 
-            nn.ReLU(),
-        )
+        # self.feature_layer = nn.Sequential(
+        #     nn.Linear(in_dim, 128), 
+        #     nn.ReLU(),
+        # )
+        self.feature_layer = nn.Sequential(nn.Conv2d(in_dim, 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+                                           nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
+                                           nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
+                                           nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
+                                           )
         
         # set advantage layer
         self.advantage_hidden_layer = NoisyLinear(128, 128)
@@ -44,7 +51,7 @@ class Network(nn.Module):
     def dist(self, x: torch.Tensor) -> torch.Tensor:
         """Get distribution for atoms."""
 
-        feature = self.feature_layer(x) # TODO: put convs instead of FC 
+        feature = self.feature_layer(x) # TODO: put convs instead of FC - no need, feature_layer is the convolutions:-)
         
         
         adv_hid = F.relu(self.advantage_hidden_layer(feature))
