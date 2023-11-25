@@ -34,7 +34,7 @@ while env.agents:
         # pass
     
         # uncomment to the observation
-    obs1 = observations["first_0"]
+    obs1 = observations["first_0"][:, :, 0]
     plt.imshow(obs1[:, :, 0], cmap="gray")
     plt.show()
         # plt.imshow(obs1[:, :, 1], cmap="gray")
