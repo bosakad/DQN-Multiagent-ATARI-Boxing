@@ -3,6 +3,35 @@ import gymnasium as gym
 import numpy as np
 import torch
 from Atari_Agents import Atari_Agents
+from pettingzoo.atari import boxing_v2
+
+SEED = 42
+
+def seed_torch(seed):
+    torch.manual_seed(seed)
+    if torch.backends.cudnn.enabled:
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+
+def train_boxing():
+    # environment 
+    env = boxing_v2.parallel_env(auto_rom_install_path="../ROMS")
+
+    # set seed 
+    np.random.seed(SEED)
+    random.seed(SEED)
+    seed_torch(SEED)
+    
+    
+    # parameters
+    num_frames = 1000
+    memory_size = 10000
+    batch_size = 4
+    target_update = 100
+    
+    agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED)
+    agents.train(num_frames)
 
 
 def train_cartPole():
