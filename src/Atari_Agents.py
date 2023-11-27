@@ -162,19 +162,19 @@ class Atari_Agents:
         
         if not self.is_test:
             for i in range(self.agents):
-                self.transition[i] = [state, selected_action[i]]
+                self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
 
         return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
         
     def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.float64, bool]:
         """Take an action and return the response of the env."""
-        # next_state, reward, terminated, truncated, _ = self.env.step(action)
+        
         observations, rewards, terminations, truncations, _ = self.env.step(actions)
-        next_state = observations["first_0"][:, :, 0]
+        next_state = utils.getState(observations, self.device) # get state from the observations
         
         # done = terminated or truncated
         done = terminations["first_0"] or truncations["first_0"]
-        
+
         if not self.is_test:
             # self.transition += [reward, next_state, done]
             
@@ -190,9 +190,13 @@ class Atari_Agents:
             #     self.memory.store(*one_step_transition)
             
             for i,agent in enumerate(self.env.agents):
-                self.transition[i] += [rewards[agent], next_state, done]
+                self.transition[i] += [rewards[agent], next_state.detach().cpu().numpy(), done]
+
+                # N-step transition
                 if self.use_n_step:
-                    one_step_transition = self.memory_n[i].store(*self.transition)
+                    one_step_transition = self.memory_n[i].store(*self.transition[i])
+
+                # one step transition
                 else:
                     one_step_transition = self.transition[i]
                 if one_step_transition:
@@ -262,10 +266,11 @@ class Atari_Agents:
         for frame_idx in range(1, num_frames + 1):
             
             actions = self.select_action(state)
-            print(actions)
-            exit()
-            # next_state, reward, done = self.step(action)
+            
             next_state, rewards, done = self.step(actions)
+
+            print(next_state)
+            exit()
 
             state = next_state
             for i,agent in enumerate(self.env.agents):
