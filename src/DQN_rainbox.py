@@ -10,7 +10,7 @@ from NoisyLinear import NoisyLinear
 class Network(nn.Module):
     def __init__(
         self, 
-        in_dim: int, 
+        in_dim: (int, int, int), 
         out_dim: int, 
         atom_size: int, 
         support: torch.Tensor
@@ -22,24 +22,20 @@ class Network(nn.Module):
         self.out_dim = out_dim
         self.atom_size = atom_size
 
-        # set common feature layer - TODO: remove this and out convs instead(https://github.com/Kaixhin/Rainbow/blob/1745b184c3dfc03d4ffa3ce2342ced9996b39a60/model.py#L49)
-        # self.feature_layer = nn.Sequential(
-        #     nn.Linear(in_dim, 128), 
-        #     nn.ReLU(),
-        # )
+        # set feature layer - TODO: experiment with adding the last layer? If it learns better
         self.feature_layer = nn.Sequential(nn.Conv2d(in_dim, 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
                                            nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
                                            nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
-                                           nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
+                                        #    nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(128),
                                            )
         
         # set advantage layer
-        self.advantage_hidden_layer = NoisyLinear(128, 128)
-        self.advantage_layer = NoisyLinear(128, out_dim * atom_size)
+        self.advantage_hidden_layer = NoisyLinear(64, 64) # todo: change number of inputs to fit the image after convs
+        self.advantage_layer = NoisyLinear(64, out_dim * atom_size)
 
         # set value layer
-        self.value_hidden_layer = NoisyLinear(128, 128)
-        self.value_layer = NoisyLinear(128, atom_size)
+        self.value_hidden_layer = NoisyLinear(64, 64)
+        self.value_layer = NoisyLinear(64, atom_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method implementation."""

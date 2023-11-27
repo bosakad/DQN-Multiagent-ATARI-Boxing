@@ -110,16 +110,14 @@ class Atari_Agents:
         if self.use_n_step:
             self.n_step = n_step
             self.memory_n = [ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma)]*self.agents
-            
-        exit()
 
         # Categorical DQN parameters
         self.v_min = v_min
         self.v_max = v_max
         self.atom_size = atom_size
-        self.support = torch.linspace(
+        self.support = [torch.linspace(
             self.v_min, self.v_max, self.atom_size
-        ).to(self.device)
+        ).to(self.device)] * self.agents
 
         # networks: dqn, dqn_target
         # self.dqn = Network(
@@ -136,6 +134,8 @@ class Atari_Agents:
             net.load_state_dict(self.dqn[i].state_dict())
             net.eval()
         
+        exit()
+
         # optimizer
         # self.optimizer = optim.Adam(self.dqn.parameters())
         self.optimizer = [optim.Adam(self.dqn.parameters())]*self.agents
