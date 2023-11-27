@@ -253,8 +253,19 @@ class Atari_Agents:
         
         # reset the env and get the initial state
         states, _ = self.env.reset(seed=self.seed)
-        state = torch.tensor(states[self.A1], dtype=torch.float32, device=self.device)
-        state = state.permute(2, 0, 1) 
+        
+        # remove - just for test
+        actions = {"first_0": 17, "second_0": 0}
+        states, rewards, terminations, truncations, _ = self.env.step(actions)
+        states, rewards, terminations, truncations, _ = self.env.step(actions)
+        states, rewards, terminations, truncations, _ = self.env.step(actions)
+        states, rewards, terminations, truncations, _ = self.env.step(actions)
+
+        # normalize the image
+        state = utils.getObservation(states, self.device)
+
+        print(state.mean(dim=(1, 2), keepdim=True))
+        print(state.std(dim=(1, 2), keepdim=True))
 
         # normalize the image
 
@@ -266,6 +277,8 @@ class Atari_Agents:
         score = [0]*self.agents
 
         print(state.shape)
+        plt.imshow(state[0,:,:].cpu().numpy(), cmap="gray")
+        plt.show()
         exit()
 
         for frame_idx in range(1, num_frames + 1):
