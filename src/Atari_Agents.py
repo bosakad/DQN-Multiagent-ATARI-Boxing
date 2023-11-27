@@ -264,11 +264,6 @@ class Atari_Agents:
         # normalize the image
         state = utils.getObservation(states, self.device)
 
-        print(state.mean(dim=(1, 2), keepdim=True))
-        print(state.std(dim=(1, 2), keepdim=True))
-
-        # normalize the image
-
         
         # alloc the variables
         update_cnt = [0]*self.agents
