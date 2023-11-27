@@ -263,11 +263,13 @@ class Atari_Agents:
         scores = [[]]*2
         score = [0]*self.agents
 
-        self.dqn[0].forward(state)
+        action = self.dqn[0].forward(state)
 
-        print(state.shape)
-        plt.imshow(state[3,:,:].cpu().numpy(), cmap="gray")
-        plt.show()
+        print(action)
+
+        # print(state.shape)
+        # plt.imshow(state[3,:,:].cpu().numpy(), cmap="gray")
+        # plt.show()
         exit()
 
         for frame_idx in range(1, num_frames + 1):
