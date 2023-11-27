@@ -255,7 +255,7 @@ class Atari_Agents:
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
         state = utils.getState(observations, self.device) # get state from the observations
-        state.unsqueeze(0) # add batch dimension - might delete this
+        state = state.unsqueeze(0) # add batch dimension - might delete this
 
         # alloc the variables
         update_cnt = [0]*self.agents

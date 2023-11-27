@@ -22,20 +22,20 @@ class Network(nn.Module):
         self.out_dim = out_dim
         self.atom_size = atom_size
 
-        # set feature layer - TODO: experiment with adding the last layer? If it learns better
-        self.feature_layer = nn.Sequential(nn.Conv2d(in_dim[0], 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
-                                           nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
-                                           nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
-                                        #    nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(128),
-                                           )
+        # set feature layer - TODO: might have to downscale even more
+        historyLen = in_dim[0]
+        self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+                            nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(64))
         
+        self.convOutputSize = 1280 # change this if you change the convs above
+
         # set advantage layer
-        self.advantage_hidden_layer = NoisyLinear(64, 64) # todo: change number of inputs to fit the image after convs
-        self.advantage_layer = NoisyLinear(64, out_dim * atom_size)
+        self.advantage_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize) 
+        self.advantage_layer = NoisyLinear(self.convOutputSize, out_dim * atom_size)
 
         # set value layer
-        self.value_hidden_layer = NoisyLinear(64, 64)
-        self.value_layer = NoisyLinear(64, atom_size)
+        self.value_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize)
+        self.value_layer = NoisyLinear(self.convOutputSize, atom_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method implementation."""
@@ -49,7 +49,9 @@ class Network(nn.Module):
 
         feature = self.feature_layer(x) # TODO: put convs instead of FC - no need, feature_layer is the convolutions:-)
         
-        
+        # flatten the feature layer
+        feature = feature.view(-1, self.convOutputSize)
+
         adv_hid = F.relu(self.advantage_hidden_layer(feature))
         val_hid = F.relu(self.value_hidden_layer(feature))
         
