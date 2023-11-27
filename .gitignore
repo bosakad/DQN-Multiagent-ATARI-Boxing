@@ -16,3 +16,10 @@ src/__pycache__/ReplayBuffer.cpython-311.pyc
 src/__pycache__/segment_tree.cpython-311.pyc
 src/videos/rainbow/rl-video-episode-0.meta.json
 src/__pycache__/Atari_Agents.cpython-311.pyc
+src/__pycache__/Atari_Agents.cpython-38.pyc
+src/__pycache__/DQN_rainbox.cpython-38.pyc
+src/__pycache__/NoisyLinear.cpython-38.pyc
+src/__pycache__/PrioritizedReplayBuffer.cpython-38.pyc
+src/__pycache__/ReplayBuffer.cpython-38.pyc
+src/__pycache__/ReplayBuffer.cpython-38.pyc
+src/__pycache__/segment_tree.cpython-38.pyc
