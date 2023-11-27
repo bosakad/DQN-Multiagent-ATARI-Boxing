@@ -146,12 +146,18 @@ class Atari_Agents:
     
     def select_action(self, state: np.ndarray) -> np.ndarray:
         """Select an action from the input state."""
-        # NoisyNet: no epsilon greedy action selection
         
-        selected_action = [0]*self.agents
-        # make one agent standing still and the other to take actions 
+        # NoisyNet: no epsilon greedy action selection
+
+        # alloc array of selected actions
+        selected_action = [np.array(0)]*self.agents
+
+        # add batch dimension - to be accepted by DQN
+        state = state.unsqueeze(0) 
+
+        # make one agent standing still and the other to take actions - TODO: change this to be more general later
         # for i in range(self.agents):
-        selected_action[0] = self.dqn(torch.FloatTensor(state).to(self.device)).argmax()
+        selected_action[0] = self.dqn[0](state).argmax()
         selected_action[0] = selected_action[0].detach().cpu().numpy()
         
         if not self.is_test:
@@ -159,16 +165,6 @@ class Atari_Agents:
                 self.transition[i] = [state, selected_action[i]]
 
         return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
-        
-        # selected_action = self.dqn(
-        #     torch.FloatTensor(state).to(self.device)
-        # ).argmax()
-        # selected_action = selected_action.detach().cpu().numpy()
-        
-        # if not self.is_test:
-        #     self.transition = [state, selected_action]
-        
-        # return selected_action
         
     def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.float64, bool]:
         """Take an action and return the response of the env."""
@@ -255,7 +251,7 @@ class Atari_Agents:
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
         state = utils.getState(observations, self.device) # get state from the observations
-        state = state.unsqueeze(0) # add batch dimension - might delete this
+        
 
         # alloc the variables
         update_cnt = [0]*self.agents
@@ -264,8 +260,10 @@ class Atari_Agents:
         score = [0]*self.agents
 
         for frame_idx in range(1, num_frames + 1):
-            # action = self.select_action(state)
+            
             actions = self.select_action(state)
+            print(actions)
+            exit()
             # next_state, reward, done = self.step(action)
             next_state, rewards, done = self.step(actions)
 
