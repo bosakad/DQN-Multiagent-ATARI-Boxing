@@ -206,6 +206,7 @@ class Atari_Agents:
 
     def update_model(self, agent) -> torch.Tensor:
         """Update the model by gradient descent."""
+        
         # PER needs beta to calculate weights
         samples = self.memory[agent].sample_batch(self.beta)
         weights = torch.FloatTensor(
@@ -214,8 +215,10 @@ class Atari_Agents:
         indices = samples["indices"]
         
         # 1-step Learning loss
-        elementwise_loss = self._compute_dqn_loss(samples, self.gamma)
+        elementwise_loss = self._compute_dqn_loss(samples, self.gamma, agent)
         
+        exit()
+
         # PER: importance sampling before average
         loss = torch.mean(elementwise_loss * weights)
         
@@ -289,7 +292,6 @@ class Atari_Agents:
                     score[i] = 0
 
 
-            exit()
 
             # if training is ready
             # if len(self.memory) >= self.batch_size:
@@ -301,7 +303,7 @@ class Atari_Agents:
             #     if update_cnt % self.target_update == 0:
             #         self._target_hard_update()
             for i in range(self.agents):
-                if len(self.memory[i]) >= self.batch_size:
+                if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
                     losses[i].append(loss)
                     update_cnt[i] += 1
@@ -309,7 +311,10 @@ class Atari_Agents:
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
                         self._target_hard_update(i)
-        
+
+                    exit()
+
+
         # plotting the result
         # self._plot(frame_idx, scores, losses)
         self._plot(frame_idx, scores[i], losses[i])
@@ -344,6 +349,7 @@ class Atari_Agents:
 
     def _compute_dqn_loss(self, samples: Dict[str, np.ndarray], gamma: float, agent: int) -> torch.Tensor:
         """Return categorical dqn loss."""
+
         device = self.device  # for shortening the following lines
         state = torch.FloatTensor(samples["obs"]).to(device)
         next_state = torch.FloatTensor(samples["next_obs"]).to(device)
@@ -360,7 +366,7 @@ class Atari_Agents:
             next_dist = self.dqn_target[agent].dist(next_state)
             next_dist = next_dist[range(self.batch_size), next_action]
 
-            t_z = reward + (1 - done) * gamma * self.support
+            t_z = reward + (1 - done) * gamma * self.support[agent]
             t_z = t_z.clamp(min=self.v_min, max=self.v_max)
             b = (t_z - self.v_min) / delta_z
             l = b.floor().long()
@@ -389,9 +395,7 @@ class Atari_Agents:
 
         return elementwise_loss
 
-    # def _target_hard_update(self): # TODO: try concex combination of target and local instead?
-    #     """Hard update: target <- local."""
-    #     self.dqn_target.load_state_dict(self.dqn.state_dict())
+
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""
         self.dqn_target[agent].load_state_dict(self.dqn[agent].state_dict()) 
