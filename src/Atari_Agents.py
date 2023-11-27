@@ -140,8 +140,8 @@ class Atari_Agents:
         self.is_test = False
 
         # define agent names
-        A1 = "first_0"
-        A2 = "second_0"
+        self.A1 = "first_0"
+        self.A2 = "second_0"
     
     def select_action(self, state: np.ndarray) -> np.ndarray:
         """Select an action from the input state."""
@@ -250,10 +250,12 @@ class Atari_Agents:
         """Train the agent."""
         self.is_test = False
         
-        # reset the env
+        # reset the env and get the initial state
         states, _ = self.env.reset(seed=self.seed)
-        state = torch.tensor(states[A1], dtype=torch.float32, device=self.device) # way to convert to tensor
-        state = state.permute(2, 0, 1).unsqueeze(0) # TODO: normalize the image
+        state = torch.tensor(states[self.A1], dtype=torch.float32, device=self.device)
+        state = state.permute(2, 0, 1) 
+        
+        # normalize the image
 
         
         # alloc the variables
@@ -262,7 +264,7 @@ class Atari_Agents:
         scores = [[]]*2
         score = [0]*self.agents
 
-        print(states["first_0"].shape)
+        print(state.shape)
         exit()
 
         for frame_idx in range(1, num_frames + 1):
