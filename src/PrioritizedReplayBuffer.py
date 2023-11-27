@@ -23,7 +23,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
     
     def __init__(
         self, 
-        obs_dim: int, 
+        obs_dim: (int, int, int), 
         size: int, 
         batch_size: int = 32, 
         alpha: float = 0.6,

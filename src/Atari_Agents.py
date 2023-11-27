@@ -82,8 +82,6 @@ class Atari_Agents:
         obsShapeOrig = env.observation_space("first_0").shape
         obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
         action_dim = env.action_space("first_0").n
-
-        exit()
         
         self.env = env
         self.batch_size = batch_size
@@ -103,10 +101,8 @@ class Atari_Agents:
         # memory for 1-step Learning
         self.beta = beta
         self.prior_eps = prior_eps
-        # self.memory = PrioritizedReplayBuffer(
-        #     obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma
-        # )
-        # TODO: split so each agent has its own memory 
+
+        # each agent has its own memory
         self.memory = [PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma)]*self.agents
         
         # memory for N-step Learning
@@ -114,10 +110,9 @@ class Atari_Agents:
         if self.use_n_step:
             self.n_step = n_step
             self.memory_n = [ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma)]*self.agents
-            # self.memory_n = ReplayBuffer(
-            #     obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma
-            # )
             
+        exit()
+
         # Categorical DQN parameters
         self.v_min = v_min
         self.v_max = v_max
