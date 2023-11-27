@@ -28,7 +28,6 @@ def train_boxing():
     random.seed(SEED)
     seed_torch(SEED)
     
-    
     # parameters
     num_frames = 1000
     memory_size = 10000

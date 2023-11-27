@@ -133,14 +133,15 @@ class Atari_Agents:
         self.optimizer = [optim.Adam(self.dqn[0].parameters()),
                           optim.Adam(self.dqn[1].parameters())]
 
-        exit()
-
         # transition to store in memory
-        # self.transition = list()
         self.transition = [list()]*self.agents 
         
         # mode: train / test
         self.is_test = False
+
+        # define agent names
+        A1 = "first_0"
+        A2 = "second_0"
     
     def select_action(self, state: np.ndarray) -> np.ndarray:
         """Select an action from the input state."""
@@ -249,17 +250,20 @@ class Atari_Agents:
         """Train the agent."""
         self.is_test = False
         
-        # state, _ = self.env.reset(seed=self.seed)
+        # reset the env
         states, _ = self.env.reset(seed=self.seed)
-        state = states["first_0"][:,:,0]
-        # update_cnt = 0
-        # losses = []
-        # scores = []
-        # score = 0
+        state = torch.tensor(states[A1], dtype=torch.float32, device=self.device) # way to convert to tensor
+        state = state.permute(2, 0, 1).unsqueeze(0) # TODO: normalize the image
+
+        
+        # alloc the variables
         update_cnt = [0]*self.agents
         losses = [[]]*2
         scores = [[]]*2
         score = [0]*self.agents
+
+        print(states["first_0"].shape)
+        exit()
 
         for frame_idx in range(1, num_frames + 1):
             # action = self.select_action(state)
