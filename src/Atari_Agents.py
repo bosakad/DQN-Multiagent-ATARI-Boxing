@@ -10,6 +10,7 @@ from typing import Deque, Dict, List, Tuple
 import gymnasium as gym
 import numpy as np
 import torch
+import utils
 
 from ReplayBuffer import ReplayBuffer
 from PrioritizedReplayBuffer import PrioritizedReplayBuffer
@@ -254,7 +255,7 @@ class Atari_Agents:
         states, _ = self.env.reset(seed=self.seed)
         state = torch.tensor(states[self.A1], dtype=torch.float32, device=self.device)
         state = state.permute(2, 0, 1) 
-        
+
         # normalize the image
 
         
