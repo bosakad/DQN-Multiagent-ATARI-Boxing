@@ -154,11 +154,12 @@ class Atari_Agents:
         selected_action[0] = self.dqn(torch.FloatTensor(state).to(self.device)).argmax()
         selected_action[0] = selected_action[0].detach().cpu().numpy()
         
-        return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
-        
         if not self.is_test:
             for i in range(self.agents):
                 self.transition[i] = [state, selected_action[i]]
+
+        return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
+        
         # selected_action = self.dqn(
         #     torch.FloatTensor(state).to(self.device)
         # ).argmax()
@@ -252,27 +253,20 @@ class Atari_Agents:
         self.is_test = False
         
         # reset the env and get the initial state
-        states, _ = self.env.reset(seed=self.seed)
-        
-        # remove - just for test
-        actions = {"first_0": 17, "second_0": 0}
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
+        observations, _ = self.env.reset(seed=self.seed)
+        state = utils.getState(observations, self.device) # get state from the observations
+        state.unsqueeze(0) # add batch dimension - might delete this
 
-        # normalize the image
-        state = utils.getObservation(states, self.device)
-
-        
         # alloc the variables
         update_cnt = [0]*self.agents
         losses = [[]]*2
         scores = [[]]*2
         score = [0]*self.agents
 
+        self.dqn[0].forward(state)
+
         print(state.shape)
-        plt.imshow(state[0,:,:].cpu().numpy(), cmap="gray")
+        plt.imshow(state[3,:,:].cpu().numpy(), cmap="gray")
         plt.show()
         exit()
 

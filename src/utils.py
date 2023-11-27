@@ -4,7 +4,7 @@
 
 import torch
 
-def getObservation(states: dict, device) -> torch.Tensor:
+def getState(states: dict, device) -> torch.Tensor:
     """
     Get the observation from the states dictionary and normalize it
     """
