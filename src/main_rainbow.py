@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from Atari_Agents import Atari_Agents
 from pettingzoo.atari import boxing_v2
+import EnvPreprocess
 
 SEED = 42
 
@@ -18,6 +19,9 @@ def train_boxing():
 
     # environment 
     env = boxing_v2.parallel_env()
+
+    # preprocess the environment
+    env = EnvPreprocess.preprocess_boxing(env)
 
     # set seed 
     np.random.seed(SEED)

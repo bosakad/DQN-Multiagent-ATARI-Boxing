@@ -79,10 +79,10 @@ class Atari_Agents:
             atom_size (int): the unit number of support
             n_step (int): step number to calculate n-step td error
         """
-        obs_dim = env.observation_space("first_0").shape
+        obsShapeOrig = env.observation_space("first_0").shape
+        obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
         action_dim = env.action_space("first_0").n
 
-        print(obs_dim)
         exit()
         
         self.env = env
