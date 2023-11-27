@@ -217,8 +217,6 @@ class Atari_Agents:
         # 1-step Learning loss
         elementwise_loss = self._compute_dqn_loss(samples, self.gamma, agent)
         
-        exit()
-
         # PER: importance sampling before average
         loss = torch.mean(elementwise_loss * weights)
         
@@ -227,8 +225,7 @@ class Atari_Agents:
         # prevent high-variance. The original rainbow employs n-step loss only.
         if self.use_n_step:
             gamma = self.gamma ** self.n_step
-            samples = self.memory_n.sample_batch_from_idxs(indices)
-            # elementwise_loss_n_loss = self._compute_dqn_loss(samples, gamma)
+            samples = self.memory_n[agent].sample_batch_from_idxs(indices)
             elementwise_loss_n_loss = self._compute_dqn_loss(samples, gamma, agent)
             elementwise_loss += elementwise_loss_n_loss
             
@@ -239,7 +236,7 @@ class Atari_Agents:
         loss.backward()
         clip_grad_norm_(self.dqn[agent].parameters(), 10.0)
         self.optimizer[agent].step()
-        
+
         # PER: update priorities
         loss_for_prior = elementwise_loss.detach().cpu().numpy()
         new_priorities = loss_for_prior + self.prior_eps
@@ -291,18 +288,9 @@ class Atari_Agents:
                     scores[i].append(score[i])
                     score[i] = 0
 
-
-
-            # if training is ready
-            # if len(self.memory) >= self.batch_size:
-            #     loss = self.update_model()
-            #     losses.append(loss)
-            #     update_cnt += 1
-                
-            #     # if hard update is needed - update the target network
-            #     if update_cnt % self.target_update == 0:
-            #         self._target_hard_update()
+            # if training is ready - update the models
             for i in range(self.agents):
+
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
                     losses[i].append(loss)
@@ -311,8 +299,6 @@ class Atari_Agents:
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
                         self._target_hard_update(i)
-
-                    exit()
 
 
         # plotting the result
