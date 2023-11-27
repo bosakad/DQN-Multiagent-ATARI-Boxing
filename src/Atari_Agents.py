@@ -119,26 +119,21 @@ class Atari_Agents:
             self.v_min, self.v_max, self.atom_size
         ).to(self.device)] * self.agents
 
-        # networks: dqn, dqn_target
-        # self.dqn = Network(
-        #     obs_dim, action_dim, self.atom_size, self.support
-        # ).to(self.device)
-        # self.dqn_target = Network(
-        #     obs_dim, action_dim, self.atom_size, self.support
-        # ).to(self.device)
-        # self.dqn_target.load_state_dict(self.dqn.state_dict())
-        # self.dqn_target.eval()
-        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support).to(self.device)]*self.agents
-        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support).to(self.device)]*self.agents
-        for i,net in enumerate(self.dqn_target):
+        # networks: dqn, dqn_target for each agent
+        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
+                    Network(obs_dim, action_dim, self.atom_size, self.support[1]).to(self.device)]
+        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
+                           Network(obs_dim, action_dim, self.atom_size, self.support[1]).to(self.device)]
+        for i, net in enumerate(self.dqn_target):
+            
             net.load_state_dict(self.dqn[i].state_dict())
             net.eval()
         
-        exit()
-
         # optimizer
-        # self.optimizer = optim.Adam(self.dqn.parameters())
-        self.optimizer = [optim.Adam(self.dqn.parameters())]*self.agents
+        self.optimizer = [optim.Adam(self.dqn[0].parameters()),
+                          optim.Adam(self.dqn[1].parameters())]
+
+        exit()
 
         # transition to store in memory
         # self.transition = list()

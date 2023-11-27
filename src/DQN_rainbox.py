@@ -23,7 +23,7 @@ class Network(nn.Module):
         self.atom_size = atom_size
 
         # set feature layer - TODO: experiment with adding the last layer? If it learns better
-        self.feature_layer = nn.Sequential(nn.Conv2d(in_dim, 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+        self.feature_layer = nn.Sequential(nn.Conv2d(in_dim[0], 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
                                            nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
                                            nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
                                         #    nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(128),
