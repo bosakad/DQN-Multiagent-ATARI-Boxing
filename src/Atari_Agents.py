@@ -269,28 +269,27 @@ class Atari_Agents:
             
             next_state, rewards, done = self.step(actions)
 
-            print(next_state)
-            exit()
-
             state = next_state
             for i,agent in enumerate(self.env.agents):
                 score[i] += rewards[agent]
-            
+
             # NoisyNet: removed decrease of epsilon
             
             # PER: increase beta - importance sampling parameter for off-policy
             fraction = min(frame_idx / num_frames, 1.0)
             self.beta = self.beta + fraction * (1.0 - self.beta)
 
-            # if episode ends
+            # if episode ends - record the scores and restart the env
             if done:
-                states, _ = self.env.reset(seed=self.seed)
-                state = states["first_0"][:,:,0]
-                # scores.append(score)
-                # score = 0
+                observations, _ = self.env.reset(seed=self.seed)
+                state = utils.getState(observations, self.device) # get state from the observations
+
                 for i in range(self.agents):
                     scores[i].append(score[i])
                     score[i] = 0
+
+
+            exit()
 
             # if training is ready
             # if len(self.memory) >= self.batch_size:
