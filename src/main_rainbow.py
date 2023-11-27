@@ -15,8 +15,9 @@ def seed_torch(seed):
         torch.backends.cudnn.deterministic = True
 
 def train_boxing():
+
     # environment 
-    env = boxing_v2.parallel_env(auto_rom_install_path="../ROMS")
+    env = boxing_v2.parallel_env()
 
     # set seed 
     np.random.seed(SEED)
@@ -68,4 +69,5 @@ def train_cartPole():
 
 if __name__ == "__main__":
 
-    train_cartPole()
+    # train_cartPole()
+    train_boxing()

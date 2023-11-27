@@ -79,8 +79,11 @@ class Atari_Agents:
             atom_size (int): the unit number of support
             n_step (int): step number to calculate n-step td error
         """
-        obs_dim = env.observation_space.shape[0]
-        action_dim = env.action_space.n
+        obs_dim = env.observation_space("first_0").shape
+        action_dim = env.action_space("first_0").n
+
+        print(obs_dim)
+        exit()
         
         self.env = env
         self.batch_size = batch_size

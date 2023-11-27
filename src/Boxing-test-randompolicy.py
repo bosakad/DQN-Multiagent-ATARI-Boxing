@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 from EnvPreprocess import preprocess_boxing
 import torch
 
-# env = boxing_v2.parallel_env(render_mode="human") # remove the render_mode not to render
-env = boxing_v2.parallel_env(auto_rom_install_path="../ROMS")
+env = boxing_v2.parallel_env(render_mode="human") # remove the render_mode not to render
 
 # preprocess the environment
 env = preprocess_boxing(env)
@@ -34,7 +33,10 @@ while env.agents:
         # pass
     
         # uncomment to the observation
-    obs1 = observations["first_0"][:, :, 0]
+    obs1 = observations["first_0"]
+    print(obs1.shape)
+
+    exit(-1)
     plt.imshow(obs1[:, :, 0], cmap="gray")
     plt.show()
         # plt.imshow(obs1[:, :, 1], cmap="gray")
