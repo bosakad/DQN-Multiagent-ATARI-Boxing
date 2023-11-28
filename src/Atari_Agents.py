@@ -8,6 +8,8 @@ from collections import deque
 from typing import Deque, Dict, List, Tuple
 
 import gymnasium as gym
+from gym_recorder import Recorder, Item
+import gym_recorder
 import numpy as np
 import torch
 import utils
@@ -297,30 +299,33 @@ class Atari_Agents:
                 
         self.env.close()
                 
-    def test(self, video_folder: str) -> None:
+    def test(self, video_folder: str, env: gym.Env) -> None:
         """Test the agent."""
         self.is_test = True
         
-        # for recording a video
-        naive_env = self.env
-        self.env = gym.wrappers.RecordVideo(self.env, video_folder=video_folder)
-        
-        state, _ = self.env.reset(seed=self.seed)
+        # create a recorder
+        self.env = env
+
+        # reset the env and get the initial state        
+        state, _ = self.env.reset()
+        state = utils.getState(state, self.device) # get state from the observations
+
         done = False
-        score = 0
+        score = [0, 0]
         
         while not done:
-            action = self.select_action(state)
-            next_state, reward, done = self.step(action)
+            actions = self.select_action(state)
+            next_state, reward, done = self.step(actions)
 
             state = next_state
-            score += reward
+            score[0] += reward[self.A1]
+            score[1] += reward[self.A2]
         
         print("score: ", score)
         self.env.close()
         
         # reset
-        self.env = naive_env
+        self.env = env
 
     def _compute_dqn_loss(self, samples: Dict[str, np.ndarray], gamma: float, agent: int) -> torch.Tensor:
         """Return categorical dqn loss."""
