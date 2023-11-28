@@ -8,6 +8,8 @@ from collections import deque
 from typing import Deque, Dict, List, Tuple
 
 import gymnasium as gym
+from gym_recorder import Recorder, Item
+import gym_recorder
 import numpy as np
 import torch
 import utils
@@ -104,21 +106,22 @@ class Atari_Agents:
         self.prior_eps = prior_eps
 
         # each agent has its own memory
-        self.memory = [PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma)]*self.agents
+        self.memory = [PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma), 
+                       PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma)]
         
         # memory for N-step Learning
         self.use_n_step = True if n_step > 1 else False
         if self.use_n_step:
             self.n_step = n_step
-            self.memory_n = [ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma)]*self.agents
+            self.memory_n = [ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma),
+                             ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma)]
 
         # Categorical DQN parameters
         self.v_min = v_min
         self.v_max = v_max
         self.atom_size = atom_size
-        self.support = [torch.linspace(
-            self.v_min, self.v_max, self.atom_size
-        ).to(self.device)] * self.agents
+        self.support = [torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device), 
+                        torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device)]
 
         # networks: dqn, dqn_target for each agent
         self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
@@ -126,7 +129,6 @@ class Atari_Agents:
         self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
                            Network(obs_dim, action_dim, self.atom_size, self.support[1]).to(self.device)]
         for i, net in enumerate(self.dqn_target):
-            
             net.load_state_dict(self.dqn[i].state_dict())
             net.eval()
         
@@ -135,7 +137,7 @@ class Atari_Agents:
                           optim.Adam(self.dqn[1].parameters())]
 
         # transition to store in memory
-        self.transition = [list()]*self.agents 
+        self.transition = [list(), list()]
         
         # mode: train / test
         self.is_test = False
@@ -146,56 +148,45 @@ class Atari_Agents:
     
     def select_action(self, state: np.ndarray) -> np.ndarray:
         """Select an action from the input state."""
+        
         # NoisyNet: no epsilon greedy action selection
-        
-        selected_action = [0]*self.agents
-        # make one agent standing still and the other to take actions 
+
+        # alloc array of selected actions
+        selected_action = [np.array(0)]*self.agents
+
+        # add batch dimension - to be accepted by DQN
+        state = state.unsqueeze(0) 
+
+        # make one agent standing still and the other to take actions - TODO: change this to be more general later
         # for i in range(self.agents):
-        selected_action[0] = self.dqn(torch.FloatTensor(state).to(self.device)).argmax()
+        selected_action[0] = self.dqn[0](state).argmax()
         selected_action[0] = selected_action[0].detach().cpu().numpy()
-        
-        return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
         
         if not self.is_test:
             for i in range(self.agents):
-                self.transition[i] = [state, selected_action[i]]
-        # selected_action = self.dqn(
-        #     torch.FloatTensor(state).to(self.device)
-        # ).argmax()
-        # selected_action = selected_action.detach().cpu().numpy()
-        
-        # if not self.is_test:
-        #     self.transition = [state, selected_action]
-        
-        # return selected_action
+                self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
+
+        return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
         
     def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.float64, bool]:
         """Take an action and return the response of the env."""
-        # next_state, reward, terminated, truncated, _ = self.env.step(action)
+        
         observations, rewards, terminations, truncations, _ = self.env.step(actions)
-        next_state = observations["first_0"][:, :, 0]
+        next_state = utils.getState(observations, self.device) # get state from the observations
         
         # done = terminated or truncated
         done = terminations["first_0"] or truncations["first_0"]
-        
-        if not self.is_test:
-            # self.transition += [reward, next_state, done]
-            
-            # N-step transition
-            # if self.use_n_step:
-            #     one_step_transition = self.memory_n.store(*self.transition)
-            # # 1-step transition
-            # else:
-            #     one_step_transition = self.transition
 
-            # # add a single step transition
-            # if one_step_transition:
-            #     self.memory.store(*one_step_transition)
+        if not self.is_test:
             
             for i,agent in enumerate(self.env.agents):
-                self.transition[i] += [rewards[agent], next_state, done]
+                self.transition[i] += [rewards[agent], next_state.detach().cpu().numpy(), done]
+
+                # N-step transition
                 if self.use_n_step:
-                    one_step_transition = self.memory_n[i].store(*self.transition)
+                    one_step_transition = self.memory_n[i].store(*self.transition[i])
+
+                # one step transition
                 else:
                     one_step_transition = self.transition[i]
                 if one_step_transition:
@@ -205,6 +196,7 @@ class Atari_Agents:
 
     def update_model(self, agent) -> torch.Tensor:
         """Update the model by gradient descent."""
+        
         # PER needs beta to calculate weights
         samples = self.memory[agent].sample_batch(self.beta)
         weights = torch.FloatTensor(
@@ -213,7 +205,7 @@ class Atari_Agents:
         indices = samples["indices"]
         
         # 1-step Learning loss
-        elementwise_loss = self._compute_dqn_loss(samples, self.gamma)
+        elementwise_loss = self._compute_dqn_loss(samples, self.gamma, agent)
         
         # PER: importance sampling before average
         loss = torch.mean(elementwise_loss * weights)
@@ -223,8 +215,7 @@ class Atari_Agents:
         # prevent high-variance. The original rainbow employs n-step loss only.
         if self.use_n_step:
             gamma = self.gamma ** self.n_step
-            samples = self.memory_n.sample_batch_from_idxs(indices)
-            # elementwise_loss_n_loss = self._compute_dqn_loss(samples, gamma)
+            samples = self.memory_n[agent].sample_batch_from_idxs(indices)
             elementwise_loss_n_loss = self._compute_dqn_loss(samples, gamma, agent)
             elementwise_loss += elementwise_loss_n_loss
             
@@ -235,7 +226,7 @@ class Atari_Agents:
         loss.backward()
         clip_grad_norm_(self.dqn[agent].parameters(), 10.0)
         self.optimizer[agent].step()
-        
+
         # PER: update priorities
         loss_for_prior = elementwise_loss.detach().cpu().numpy()
         new_priorities = loss_for_prior + self.prior_eps
@@ -252,67 +243,45 @@ class Atari_Agents:
         self.is_test = False
         
         # reset the env and get the initial state
-        states, _ = self.env.reset(seed=self.seed)
+        observations, _ = self.env.reset(seed=self.seed)
+        state = utils.getState(observations, self.device) # get state from the observations
         
-        # remove - just for test
-        actions = {"first_0": 17, "second_0": 0}
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
-        states, rewards, terminations, truncations, _ = self.env.step(actions)
 
-        # normalize the image
-        state = utils.getObservation(states, self.device)
-
-        
         # alloc the variables
         update_cnt = [0]*self.agents
-        losses = [[]]*2
-        scores = [[]]*2
+        losses = [[] for _ in range(self.agents)]
+        scores = [[] for _ in range(self.agents)]
         score = [0]*self.agents
 
-        print(state.shape)
-        plt.imshow(state[0,:,:].cpu().numpy(), cmap="gray")
-        plt.show()
-        exit()
-
         for frame_idx in range(1, num_frames + 1):
-            # action = self.select_action(state)
+            
             actions = self.select_action(state)
-            # next_state, reward, done = self.step(action)
+            
             next_state, rewards, done = self.step(actions)
 
             state = next_state
             for i,agent in enumerate(self.env.agents):
                 score[i] += rewards[agent]
-            
+
             # NoisyNet: removed decrease of epsilon
             
             # PER: increase beta - importance sampling parameter for off-policy
             fraction = min(frame_idx / num_frames, 1.0)
             self.beta = self.beta + fraction * (1.0 - self.beta)
 
-            # if episode ends
+            # if episode ends - record the scores and restart the env
             if done:
-                states, _ = self.env.reset(seed=self.seed)
-                state = states["first_0"][:,:,0]
-                # scores.append(score)
-                # score = 0
+                observations, _ = self.env.reset(seed=self.seed)
+                state = utils.getState(observations, self.device) # get state from the observations
+
                 for i in range(self.agents):
                     scores[i].append(score[i])
                     score[i] = 0
 
-            # if training is ready
-            # if len(self.memory) >= self.batch_size:
-            #     loss = self.update_model()
-            #     losses.append(loss)
-            #     update_cnt += 1
-                
-            #     # if hard update is needed - update the target network
-            #     if update_cnt % self.target_update == 0:
-            #         self._target_hard_update()
+            # if training is ready - update the models
             for i in range(self.agents):
-                if len(self.memory[i]) >= self.batch_size:
+
+                if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
                     losses[i].append(loss)
                     update_cnt[i] += 1
@@ -320,41 +289,47 @@ class Atari_Agents:
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
                         self._target_hard_update(i)
-        
+
+                        # print out the frame progress from time to time
+                        print("frame: ", frame_idx)
+ 
+
         # plotting the result
-        # self._plot(frame_idx, scores, losses)
-        self._plot(frame_idx, scores[i], losses[i])
-        self._plot(frame_idx, scores[i], losses[i])
+        self._plot(frame_idx, np.array(scores), np.array(losses))
                 
         self.env.close()
                 
-    def test(self, video_folder: str) -> None:
+    def test(self, video_folder: str, env: gym.Env) -> None:
         """Test the agent."""
         self.is_test = True
         
-        # for recording a video
-        naive_env = self.env
-        self.env = gym.wrappers.RecordVideo(self.env, video_folder=video_folder)
-        
-        state, _ = self.env.reset(seed=self.seed)
+        # create a recorder
+        self.env = env
+
+        # reset the env and get the initial state        
+        state, _ = self.env.reset()
+        state = utils.getState(state, self.device) # get state from the observations
+
         done = False
-        score = 0
+        score = [0, 0]
         
         while not done:
-            action = self.select_action(state)
-            next_state, reward, done = self.step(action)
+            actions = self.select_action(state)
+            next_state, reward, done = self.step(actions)
 
             state = next_state
-            score += reward
+            score[0] += reward[self.A1]
+            score[1] += reward[self.A2]
         
         print("score: ", score)
         self.env.close()
         
         # reset
-        self.env = naive_env
+        self.env = env
 
     def _compute_dqn_loss(self, samples: Dict[str, np.ndarray], gamma: float, agent: int) -> torch.Tensor:
         """Return categorical dqn loss."""
+
         device = self.device  # for shortening the following lines
         state = torch.FloatTensor(samples["obs"]).to(device)
         next_state = torch.FloatTensor(samples["next_obs"]).to(device)
@@ -371,7 +346,7 @@ class Atari_Agents:
             next_dist = self.dqn_target[agent].dist(next_state)
             next_dist = next_dist[range(self.batch_size), next_action]
 
-            t_z = reward + (1 - done) * gamma * self.support
+            t_z = reward + (1 - done) * gamma * self.support[agent]
             t_z = t_z.clamp(min=self.v_min, max=self.v_max)
             b = (t_z - self.v_min) / delta_z
             l = b.floor().long()
@@ -400,9 +375,7 @@ class Atari_Agents:
 
         return elementwise_loss
 
-    # def _target_hard_update(self): # TODO: try concex combination of target and local instead?
-    #     """Hard update: target <- local."""
-    #     self.dqn_target.load_state_dict(self.dqn.state_dict())
+
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""
         self.dqn_target[agent].load_state_dict(self.dqn[agent].state_dict()) 
@@ -417,9 +390,13 @@ class Atari_Agents:
         clear_output(True)
         plt.figure(figsize=(20, 5))
         plt.subplot(131)
-        plt.title('frame %s. score: %s' % (frame_idx, np.mean(scores[-10:])))
-        plt.plot(scores)
+        plt.title('frame %s. score_A1: %s. score_A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
+        plt.plot(scores[0])
+        plt.plot(scores[1])
+        plt.legend(["score A1", "score A2"])
         plt.subplot(132)
         plt.title('loss')
-        plt.plot(losses)
+        plt.plot(losses[0])
+        plt.plot(losses[1])
+        plt.legend(["loss A1", "loss A2"])
         plt.show()

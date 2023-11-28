@@ -4,7 +4,7 @@
 
 import torch
 
-def getObservation(states: dict, device) -> torch.Tensor:
+def getState(states: dict, device, returnAs="torch") -> torch.Tensor:
     """
     Get the observation from the states dictionary and normalize it
     """
@@ -15,6 +15,11 @@ def getObservation(states: dict, device) -> torch.Tensor:
 
     # normalize the image
     state = Normalize(state)
+
+    if returnAs == "torch":
+        return state
+    elif returnAs == "numpy":
+        return state.detach().cpu().numpy()
 
     return state
 

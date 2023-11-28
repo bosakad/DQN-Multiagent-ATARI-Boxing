@@ -36,11 +36,11 @@ class ReplayBuffer:
     def store(
         self, 
         obs: np.ndarray, 
-        act: np.ndarray, 
+        act: int, 
         rew: float, 
         next_obs: np.ndarray, 
         done: bool,
-    ) -> Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]:
+    ) -> Tuple[np.ndarray, int, float, np.ndarray, bool]:
         transition = (obs, act, rew, next_obs, done)
         self.n_step_buffer.append(transition)
 
