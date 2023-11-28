@@ -29,13 +29,17 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 1400
+    num_frames = 140
     memory_size = 10000
     batch_size = 6
     target_update = 100
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED)
     agents.train(num_frames)
+
+    # test the agent
+    video_folder="../results/videos/rainbow"
+    agents.test(video_folder=video_folder)
 
 
 def train_cartPole():

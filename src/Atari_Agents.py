@@ -118,9 +118,8 @@ class Atari_Agents:
         self.v_min = v_min
         self.v_max = v_max
         self.atom_size = atom_size
-        self.support = [torch.linspace(
-            self.v_min, self.v_max, self.atom_size
-        ).to(self.device)] * self.agents
+        self.support = [torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device), 
+                        torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device)]
 
         # networks: dqn, dqn_target for each agent
         self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
@@ -128,7 +127,6 @@ class Atari_Agents:
         self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
                            Network(obs_dim, action_dim, self.atom_size, self.support[1]).to(self.device)]
         for i, net in enumerate(self.dqn_target):
-            
             net.load_state_dict(self.dqn[i].state_dict())
             net.eval()
         
@@ -137,7 +135,7 @@ class Atari_Agents:
                           optim.Adam(self.dqn[1].parameters())]
 
         # transition to store in memory
-        self.transition = [list()]*self.agents 
+        self.transition = [list(), list()]
         
         # mode: train / test
         self.is_test = False
@@ -290,8 +288,8 @@ class Atari_Agents:
                     if update_cnt[i] % self.target_update == 0:
                         self._target_hard_update(i)
 
-                # print out the frame progress from time to time
-                print("frame: ", frame_idx)
+                        # print out the frame progress from time to time
+                        print("frame: ", frame_idx)
  
 
         # plotting the result
