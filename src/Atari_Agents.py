@@ -158,10 +158,11 @@ class Atari_Agents:
         state = state.unsqueeze(0) 
 
         # make one agent standing still and the other to take actions - TODO: change this to be more general later
-        # for i in range(self.agents):
-        selected_action[0] = self.dqn[0](state).argmax()
-        selected_action[0] = selected_action[0].detach().cpu().numpy()
+        for i in range(self.agents):
+            selected_action[i] = self.dqn[i](state).argmax()
+            selected_action[i] = selected_action[i].detach().cpu().numpy()
         
+
         if not self.is_test:
             for i in range(self.agents):
                 self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
