@@ -63,7 +63,8 @@ class Atari_Agents:
         # N-step Learning
         n_step: int = 2,
         # add number of agents 
-        n_agents = 2
+        n_agents = 2,
+        TAU = 0.005
     ):
         """Initialization.
         
@@ -87,6 +88,8 @@ class Atari_Agents:
         # action_dim = env.action_space("first_0").n
         action_dim = 10  # the range of actions is 0-9 - the rest does not matter
         
+        self.tau = TAU
+
         self.env = env
         self.batch_size = batch_size
         self.target_update = target_update
@@ -158,11 +161,13 @@ class Atari_Agents:
         # add batch dimension - to be accepted by DQN
         state = state.unsqueeze(0) 
 
-        # make one agent standing still and the other to take actions - TODO: change this to be more general later
-        for i in range(self.agents):
-            selected_action[i] = self.dqn[i](state).argmax()
-            selected_action[i] = selected_action[i].detach().cpu().numpy()
+        # make one agent standing still and the other to take actions
+        # for i in range(self.agents):  TODO: put this back for both agents to learn
+        #     selected_action[i] = self.dqn[i](state).argmax()
+        #     selected_action[i] = selected_action[i].detach().cpu().numpy()
         
+        selected_action[0] = self.dqn[0](state).argmax()
+        selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         if not self.is_test:
             for i in range(self.agents):
@@ -288,9 +293,15 @@ class Atari_Agents:
                     losses[i].append(loss)
                     update_cnt[i] += 1
                     
+                    # update each iteration - TODO: experiment
+                    target_net_state_dict = self.dqn[i].state_dict()
+                    policy_net_state_dict = self.dqn_target[i].state_dict()
+                    for key in policy_net_state_dict:
+                        target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
+                    self.dqn_target.load_state_dict(target_net_state_dict)
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        self._target_hard_update(i)
+                        # self._target_hard_update(i)
 
                         # print out the frame progress from time to time
                         print("frame: ", frame_idx)
