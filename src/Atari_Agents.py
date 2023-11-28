@@ -84,7 +84,8 @@ class Atari_Agents:
         """
         obsShapeOrig = env.observation_space("first_0").shape
         obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
-        action_dim = env.action_space("first_0").n
+        # action_dim = env.action_space("first_0").n
+        action_dim = 10  # the range of actions is 0-9 - the rest does not matter
         
         self.env = env
         self.batch_size = batch_size
