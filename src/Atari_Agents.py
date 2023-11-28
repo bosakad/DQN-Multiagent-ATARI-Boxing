@@ -64,7 +64,7 @@ class Atari_Agents:
         n_step: int = 2,
         # add number of agents 
         n_agents = 2,
-        TAU = 0.005
+        TAU = 0.01
     ):
         """Initialization.
         
@@ -168,6 +168,9 @@ class Atari_Agents:
         
         selected_action[0] = self.dqn[0](state).argmax()
         selected_action[0] = selected_action[0].detach().cpu().numpy()
+
+        #  random action for the second agent
+        selected_action[1] = np.array(np.random.randint(0, 10))
 
         if not self.is_test:
             for i in range(self.agents):
@@ -294,18 +297,19 @@ class Atari_Agents:
                     update_cnt[i] += 1
                     
                     # update each iteration - TODO: experiment
-                    target_net_state_dict = self.dqn[i].state_dict()
-                    policy_net_state_dict = self.dqn_target[i].state_dict()
-                    for key in policy_net_state_dict:
-                        target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
-                    self.dqn_target[i].load_state_dict(target_net_state_dict)
+                    # target_net_state_dict = self.dqn[i].state_dict()
+                    # policy_net_state_dict = self.dqn_target[i].state_dict()
+                    # for key in policy_net_state_dict:
+                    #     target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
+                    # self.dqn_target[i].load_state_dict(target_net_state_dict)
 
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        # self._target_hard_update(i)
+                        self._target_hard_update(i) # TODO: experiment with soft update
 
                         # print out the frame progress from time to time
-                        print("frame: ", frame_idx)
+                        if i == 0:
+                            print("frame: ", frame_idx)
  
 
         # plotting the result

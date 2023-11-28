@@ -1,7 +1,7 @@
 import supersuit
 import warnings
 
-def preprocess_boxing(env, width = 112, height = 147):
+def preprocess_boxing(env, width = 112, height = 147, training=True):
     """
     Preprocess the boxing environment
     :param env: the pettingzoo boxing environment
@@ -18,7 +18,8 @@ def preprocess_boxing(env, width = 112, height = 147):
         warnings.simplefilter("ignore")
 
         # force the sticky actions
-        env = supersuit.sticky_actions_v0(env, 0.25)
+        if training == True:
+            env = supersuit.sticky_actions_v0(env, 0.25)
 
         # take only 1 color channel - better than grayscale (computationaly)
         env = supersuit.color_reduction_v0(env, mode='G')
