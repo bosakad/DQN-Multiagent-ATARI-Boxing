@@ -24,9 +24,9 @@ def train_boxing():
     env = EnvPreprocess.preprocess_boxing(env)
 
     # set seed 
-    # np.random.seed(SEED)
-    # random.seed(SEED)
-    # seed_torch(SEED)
+    np.random.seed(SEED)
+    random.seed(SEED)
+    seed_torch(SEED)
     
     # parameters
     num_frames = 2000
