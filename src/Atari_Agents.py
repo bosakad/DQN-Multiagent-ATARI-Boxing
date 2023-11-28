@@ -104,13 +104,15 @@ class Atari_Agents:
         self.prior_eps = prior_eps
 
         # each agent has its own memory
-        self.memory = [PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma)]*self.agents
+        self.memory = [PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma), 
+                       PrioritizedReplayBuffer(obs_dim, memory_size, batch_size, alpha=alpha, gamma=gamma)]
         
         # memory for N-step Learning
         self.use_n_step = True if n_step > 1 else False
         if self.use_n_step:
             self.n_step = n_step
-            self.memory_n = [ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma)]*self.agents
+            self.memory_n = [ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma),
+                             ReplayBuffer(obs_dim, memory_size, batch_size, n_step=n_step, gamma=gamma)]
 
         # Categorical DQN parameters
         self.v_min = v_min
@@ -176,18 +178,6 @@ class Atari_Agents:
         done = terminations["first_0"] or truncations["first_0"]
 
         if not self.is_test:
-            # self.transition += [reward, next_state, done]
-            
-            # N-step transition
-            # if self.use_n_step:
-            #     one_step_transition = self.memory_n.store(*self.transition)
-            # # 1-step transition
-            # else:
-            #     one_step_transition = self.transition
-
-            # # add a single step transition
-            # if one_step_transition:
-            #     self.memory.store(*one_step_transition)
             
             for i,agent in enumerate(self.env.agents):
                 self.transition[i] += [rewards[agent], next_state.detach().cpu().numpy(), done]
@@ -259,8 +249,8 @@ class Atari_Agents:
 
         # alloc the variables
         update_cnt = [0]*self.agents
-        losses = [[]]*2
-        scores = [[]]*2
+        losses = [[] for _ in range(self.agents)]
+        scores = [[] for _ in range(self.agents)]
         score = [0]*self.agents
 
         for frame_idx in range(1, num_frames + 1):
@@ -300,11 +290,13 @@ class Atari_Agents:
                     if update_cnt[i] % self.target_update == 0:
                         self._target_hard_update(i)
 
+                # print out the frame progress from time to time
+                print("frame: ", frame_idx)
+ 
 
         # plotting the result
-        # self._plot(frame_idx, scores, losses)
-        self._plot(frame_idx, scores[i], losses[i])
-        self._plot(frame_idx, scores[i], losses[i])
+        self._plot(frame_idx, np.array(scores[0]), np.array(losses[0]))
+        self._plot(frame_idx, np.array(scores[1]), np.array(losses[1]))
                 
         self.env.close()
                 

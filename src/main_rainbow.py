@@ -29,9 +29,9 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 1000
+    num_frames = 1400
     memory_size = 10000
-    batch_size = 4
+    batch_size = 6
     target_update = 100
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED)
