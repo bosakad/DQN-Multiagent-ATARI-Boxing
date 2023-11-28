@@ -293,8 +293,7 @@ class Atari_Agents:
  
 
         # plotting the result
-        self._plot(frame_idx, np.array(scores[0]), np.array(losses[0]))
-        self._plot(frame_idx, np.array(scores[1]), np.array(losses[1]))
+        self._plot(frame_idx, np.array(scores), np.array(losses))
                 
         self.env.close()
                 
@@ -386,9 +385,13 @@ class Atari_Agents:
         clear_output(True)
         plt.figure(figsize=(20, 5))
         plt.subplot(131)
-        plt.title('frame %s. score: %s' % (frame_idx, np.mean(scores[-10:])))
-        plt.plot(scores)
+        plt.title('frame %s. score_A1: %s. score_A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
+        plt.plot(scores[0])
+        plt.plot(scores[1])
+        plt.legend(["score A1", "score A2"])
         plt.subplot(132)
         plt.title('loss')
-        plt.plot(losses)
+        plt.plot(losses[0])
+        plt.plot(losses[1])
+        plt.legend(["loss A1", "loss A2"])
         plt.show()
