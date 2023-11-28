@@ -298,7 +298,8 @@ class Atari_Agents:
                     policy_net_state_dict = self.dqn_target[i].state_dict()
                     for key in policy_net_state_dict:
                         target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
-                    self.dqn_target.load_state_dict(target_net_state_dict)
+                    self.dqn_target[i].load_state_dict(target_net_state_dict)
+
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
                         # self._target_hard_update(i)
