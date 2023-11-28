@@ -25,7 +25,7 @@ class NoisyLinear(nn.Module):
         self, 
         in_features: int, 
         out_features: int, 
-        std_init: float = 0.5,
+        std_init: float = 0.8,
     ):
         """Initialization."""
         super(NoisyLinear, self).__init__()

@@ -61,7 +61,7 @@ class Atari_Agents:
         v_max: float = 200.0,
         atom_size: int = 51,
         # N-step Learning
-        n_step: int = 3,
+        n_step: int = 2,
         # add number of agents 
         n_agents = 2
     ):
