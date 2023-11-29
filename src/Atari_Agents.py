@@ -174,7 +174,7 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
-        selected_action[1] = np.array(np.random.randint(0, 10))
+        selected_action[1] = self.env.action_space(self.A2).sample()
 
 
         if random: # select random action for both agents

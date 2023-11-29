@@ -6,7 +6,8 @@ from Atari_Agents import Atari_Agents
 from pettingzoo.atari import boxing_v2
 import EnvPreprocess
 
-SEED = 0
+# SEED = 0
+SEED = 1
 
 def seed_torch(seed):
     torch.manual_seed(seed)
