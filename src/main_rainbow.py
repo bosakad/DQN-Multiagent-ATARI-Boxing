@@ -19,8 +19,8 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    env = boxing_v2.parallel_env()
-    # env = boxing_v2.parallel_env(render_mode="human")
+    # env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)

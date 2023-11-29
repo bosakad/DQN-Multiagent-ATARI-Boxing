@@ -427,12 +427,12 @@ class Atari_Agents:
         """Fill replay buffer with experiences."""
 
         # move the players in the corners F - these are places where they easily meet and get a lot rewards
-        def moveToCorners_random(env):
+        def moveToCorners_random(env, device):
             action = np.random.choice([6, 7, 8, 9]) # random corner
             actions = {"first_0": action, "second_0": action}
             for _ in range(10):
-                observations, rewards, terminations, truncations, _ = env.step(actions)
-            return observations # return the last state
+                observations, _, _, _, _ = env.step(actions)
+            return utils.getState(observations, device) # return the last state
         
         def switchSides(env, side):
             pass # TODO
@@ -454,6 +454,10 @@ class Atari_Agents:
                 observations, _ = self.env.reset(seed=self.seed)
                 state = utils.getState(observations, self.device) # get state from the observations
             
+            # move the players in the corners from time to time
+            if frame % 50 == 0:
+                state = moveToCorners_random(self.env, self.device)
+                
 
         # print(self.memory[0].size)
         # exit()
