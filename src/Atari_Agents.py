@@ -164,11 +164,12 @@ class Atari_Agents:
         # add batch dimension - to be accepted by DQN
         state = state.unsqueeze(0) 
 
-        # make one agent standing still and the other to take actions
+
         # for i in range(self.agents):  TODO: put this back for both agents to learn
         #     selected_action[i] = self.dqn[i](state).argmax()
         #     selected_action[i] = selected_action[i].detach().cpu().numpy()
-        
+
+        # make one agent do random and the other to take actions        
         selected_action[0] = self.dqn[0](state).argmax()
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
@@ -257,13 +258,14 @@ class Atari_Agents:
 
         return loss.item()
         
-    def train(self, num_frames: int, plotting_interval: int = 200):
+    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill=1000):
         """Train the agent."""
 
         self.is_test = False
         
         # fill the replay buffer with some experiences
-        self.fill_replay_buffer(1000)
+        if init_buffer_fill > 0:
+            self.fill_replay_buffer(init_buffer_fill)
 
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
@@ -438,11 +440,22 @@ class Atari_Agents:
         observations, _ = self.env.reset(seed=self.seed)
         state = utils.getState(observations, self.device)
 
-        counterFrames = 0
+        # fill the buffer with random actions
+        for frame in range(0, num_frames + 1):
 
+            # select a random actions and step the env (saves the transition in the memory)
+            actions = self.select_action(state, random=True)
+            next_state, rewards, done = self.step(actions)
+            state = next_state
 
-        print(self.memory[0].size())
-        exit()
+            # if episode ends - restart the env
+            if done:
+                observations, _ = self.env.reset(seed=self.seed)
+                state = utils.getState(observations, self.device) # get state from the observations
+            
+
+        # print(self.memory[0].size)
+        # exit()
 
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""

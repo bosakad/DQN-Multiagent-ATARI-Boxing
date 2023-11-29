@@ -30,22 +30,23 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 5
-    memory_size = 300
-    batch_size = 64
-    target_update = 20
+    num_frames = 2000
+    memory_size = 1000
+    batch_size = 32
+    target_update = 50
+    init_buffer_fill = 0
 
     # define a suppport - might have to increase number of atoms
     v_min = -150
     v_max = 150
-    atom_size = 61
+    atom_size = 81
 
     # define the architecture type
     architectureType = "xtra-small"
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
                           atom_size=atom_size, archType=architectureType)
-    agents.train(num_frames)
+    agents.train(num_frames, init_buffer_fill=init_buffer_fill)
 
                                         # test the agent
     # create a new env with rendering                                    
