@@ -52,13 +52,46 @@ def train_boxing():
     env = boxing_v2.parallel_env(render_mode="human")
     env = EnvPreprocess.preprocess_boxing(env, training=False)
     
-    video_folder="../results/videos/rainbow"
-    agents.test(video_folder, env)
+    agents.test(env)
 
     env.close()
 
 
+def test_boxing(PATH): # test boxing using saved models
+
+    env = boxing_v2.parallel_env(render_mode="human")
+    env = EnvPreprocess.preprocess_boxing(env, training=False)
+
+    # parameters
+    memory_size = 300
+    batch_size = 32
+    target_update = 20
+
+    # define a suppport - might have to increase number of atoms
+    v_min = -150
+    v_max = 150
+    atom_size = 61
+
+        # set seed 
+    np.random.seed(SEED)
+    random.seed(SEED)
+    seed_torch(SEED)
+
+    # define the architecture type
+    architectureType = "small"
+    
+    agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
+                          atom_size=atom_size, archType=architectureType)
+    
+    agents.load(PATH) # load the models
+    agents.test(env)
+
+
+    env.close()
+
 if __name__ == "__main__":
 
-    # train_cartPole()
     train_boxing()
+    # test_boxing("../results/models/dqn")
+
+
