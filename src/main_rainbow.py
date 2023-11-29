@@ -18,8 +18,8 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    # env = boxing_v2.parallel_env()
-    env = boxing_v2.parallel_env(render_mode="human")
+    env = boxing_v2.parallel_env()
+    # env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
@@ -30,7 +30,7 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 500
+    num_frames = 5
     memory_size = 300
     batch_size = 64
     target_update = 20

@@ -87,8 +87,7 @@ class Atari_Agents:
         """
         obsShapeOrig = env.observation_space("first_0").shape
         obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
-        # action_dim = env.action_space("first_0").n
-        action_dim = 10  # the range of actions is 0-9 - the rest does not matter
+        action_dim = env.action_space("first_0").n
         
         self.tau = TAU
         self.PATH = PATH
@@ -154,7 +153,7 @@ class Atari_Agents:
         self.A1 = "first_0"
         self.A2 = "second_0"
     
-    def select_action(self, state: np.ndarray) -> np.ndarray:
+    def select_action(self, state: np.ndarray, random=False) -> np.ndarray:
         """Select an action from the input state."""
         
         # NoisyNet: no epsilon greedy action selection
@@ -176,12 +175,18 @@ class Atari_Agents:
         #  random action for the second agent
         selected_action[1] = np.array(np.random.randint(0, 10))
 
+
+        if random: # select random action for both agents
+            for i, agent in enumerate(self.env.agents):
+                selected_action[i] = self.env.action_space(agent).sample()
+
         if not self.is_test:
             for i in range(self.agents):
                 self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
 
         return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
         
+
     def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.float64, bool]:
         """Take an action and return the response of the env."""
         
@@ -254,8 +259,12 @@ class Atari_Agents:
         
     def train(self, num_frames: int, plotting_interval: int = 200):
         """Train the agent."""
+
         self.is_test = False
         
+        # fill the replay buffer with some experiences
+        self.fill_replay_buffer(1000)
+
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
         state = utils.getState(observations, self.device) # get state from the observations
@@ -410,6 +419,30 @@ class Atari_Agents:
 
         return elementwise_loss
 
+
+    def fill_replay_buffer(self, num_frames: int):
+        """Fill replay buffer with experiences."""
+
+        # move the players in the corners F - these are places where they easily meet and get a lot rewards
+        def moveToCorners_random(env):
+            action = np.random.choice([6, 7, 8, 9]) # random corner
+            actions = {"first_0": action, "second_0": action}
+            for _ in range(10):
+                observations, rewards, terminations, truncations, _ = env.step(actions)
+            return observations # return the last state
+        
+        def switchSides(env, side):
+            pass # TODO
+
+        # reset the env and get the initial state
+        observations, _ = self.env.reset(seed=self.seed)
+        state = utils.getState(observations, self.device)
+
+        counterFrames = 0
+
+
+        print(self.memory[0].size())
+        exit()
 
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""
