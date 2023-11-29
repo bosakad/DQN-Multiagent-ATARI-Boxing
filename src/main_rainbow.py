@@ -7,7 +7,7 @@ from pettingzoo.atari import boxing_v2
 import EnvPreprocess
 
 # SEED = 0
-SEED = 1
+SEED = 2
 
 def seed_torch(seed):
     torch.manual_seed(seed)
@@ -32,10 +32,10 @@ def train_boxing():
     
     # parameters
     num_frames = 2000
-    memory_size = 1000
+    memory_size = 2000
     batch_size = 32
     target_update = 50
-    init_buffer_fill = 0
+    init_buffer_fill = 1000
 
     # define a suppport - might have to increase number of atoms
     v_min = -150

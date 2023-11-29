@@ -174,12 +174,13 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
-        selected_action[1] = self.env.action_space(self.A2).sample()
+        # selected_action[1] = self.env.action_space(self.A2).sample()
+        selected_action[1] = np.array(0)
 
 
         if random: # select random action for both agents
             for i, agent in enumerate(self.env.agents):
-                selected_action[i] = self.env.action_space(agent).sample()
+                selected_action[i] = np.array(self.env.action_space(agent).sample())    
 
         if not self.is_test:
             for i in range(self.agents):
