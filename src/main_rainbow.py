@@ -18,7 +18,7 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
@@ -38,9 +38,12 @@ def train_boxing():
     v_min = -150
     v_max = 150
     atom_size = 61
+
+    # define the architecture type
+    architectureType = "small"
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size)
+                          atom_size=atom_size, archType=architectureType)
     agents.train(num_frames)
 
                                         # test the agent

@@ -64,7 +64,8 @@ class Atari_Agents:
         n_step: int = 2,
         # add number of agents 
         n_agents = 2,
-        TAU = 0.01
+        TAU = 0.01, # convex combination of copying
+        archType = "small" # small or big type of architecture
     ):
         """Initialization.
         
@@ -128,10 +129,11 @@ class Atari_Agents:
                         torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device)]
 
         # networks: dqn, dqn_target for each agent
-        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
-                    Network(obs_dim, action_dim, self.atom_size, self.support[1]).to(self.device)]
-        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0]).to(self.device),
-                           Network(obs_dim, action_dim, self.atom_size, self.support[1]).to(self.device)]
+        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archType).to(self.device),
+                    Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archType).to(self.device)]
+        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archType).to(self.device),
+                           Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archType).to(self.device)]
+        
         for i, net in enumerate(self.dqn_target):
             net.load_state_dict(self.dqn[i].state_dict())
             net.eval()

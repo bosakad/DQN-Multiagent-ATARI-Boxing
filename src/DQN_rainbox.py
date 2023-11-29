@@ -14,7 +14,7 @@ class Network(nn.Module):
         out_dim: int, 
         atom_size: int, 
         support: torch.Tensor,
-        architectureSmall = True
+        architectureType = "small"
     ):
         """Initialization."""
         super(Network, self).__init__()
@@ -26,14 +26,14 @@ class Network(nn.Module):
         # set feature layer
         historyLen = in_dim[0]
 
-        if architectureSmall:
+        if architectureType == "small":
 
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
                                 nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(64))
         
             self.convOutputSize = 1280 # change this if you change the convs above
 
-        else: # architecture is large
+        elif architectureType == "big": # architecture is large
 
              # set feature layer - TODO: experiment with adding the last layer? If it learns better
             self.feature_layer = nn.Sequential(nn.Conv2d(in_dim[0], 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
