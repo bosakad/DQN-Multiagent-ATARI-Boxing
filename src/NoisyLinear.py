@@ -76,8 +76,7 @@ class NoisyLinear(nn.Module):
         We don't use separate statements on train / eval mode.
         It doesn't show remarkable difference of performance.
         """
-
-        # TODO: put here if self.training -> noisy, else without the noise
+        
         if self.training:
 
             return F.linear(

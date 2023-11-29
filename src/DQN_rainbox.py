@@ -26,7 +26,14 @@ class Network(nn.Module):
         # set feature layer
         historyLen = in_dim[0]
 
-        if architectureType == "small":
+        if architectureType == "xtra-small":
+
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
+                                nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
+        
+            self.convOutputSize = 640 # change this if you change the convs above
+
+        elif architectureType == "small":
 
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
                                 nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(64))
