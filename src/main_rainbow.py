@@ -5,6 +5,8 @@ import torch
 from Atari_Agents import Atari_Agents
 from pettingzoo.atari import boxing_v2
 import EnvPreprocess
+import os
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
 # SEED = 0
 SEED = 10
@@ -22,7 +24,6 @@ def train_boxing():
     env = boxing_v2.parallel_env()
     # env = boxing_v2.parallel_env(render_mode="human")
 
-    CUDA_LAUNCH_BLOCKING=1 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
 

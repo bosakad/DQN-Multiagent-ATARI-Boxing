@@ -393,7 +393,7 @@ class Atari_Agents:
             next_action = self.dqn[agent](next_state).argmax(1)
             next_dist = self.dqn_target[agent].dist(next_state)
             indices = torch.arange(self.batch_size).to(self.device)
-            next_dist = next_dist[indices, next_action]
+            next_dist = next_dist[indices, next_action].to(self.device)
 
             t_z = reward + (1 - done) * gamma * self.support[agent]
             t_z = t_z.clamp(min=self.v_min, max=self.v_max)
@@ -412,10 +412,11 @@ class Atari_Agents:
 
             proj_dist = torch.zeros(next_dist.size(), device=self.device)
             proj_dist.view(-1).index_add_(
-                0, (l + offset).view(-1), (next_dist * (u.float() - b)).view(-1)
+                0, (l + offset).view(-1), (next_dist * (u.float() - b.float())).view(-1)
             )
+            print((u + offset))
             proj_dist.view(-1).index_add_(
-                0, (u + offset).view(-1), (next_dist * (b - l.float())).view(-1)
+                0, (u + offset).view(-1), (next_dist * (b.float() - l.float())).view(-1)
             )
 
         dist = self.dqn[agent].dist(state)
