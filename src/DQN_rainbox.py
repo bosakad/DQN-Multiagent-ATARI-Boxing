@@ -14,7 +14,7 @@ class Network(nn.Module):
         out_dim: int, 
         atom_size: int, 
         support: torch.Tensor,
-        architectureType = "small"
+        architectureType = "small",
     ):
         """Initialization."""
         super(Network, self).__init__()

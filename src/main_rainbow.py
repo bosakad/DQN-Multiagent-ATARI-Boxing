@@ -29,7 +29,7 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 2000
+    num_frames = 1
     memory_size = 300
     batch_size = 32
     target_update = 20

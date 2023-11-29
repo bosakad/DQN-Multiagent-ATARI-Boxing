@@ -321,8 +321,12 @@ class Atari_Agents:
                 
     def test(self, video_folder: str, env: gym.Env) -> None:
         """Test the agent."""
+        
         self.is_test = True
         
+        self.dqn[0].eval() # set the evaluation mode of the model - removes the noisy
+        self.dqn[1].eval()
+
         # create a recorder
         self.env = env
 
