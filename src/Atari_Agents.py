@@ -105,7 +105,8 @@ class Atari_Agents:
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         print(self.device)
-        
+        # self.device = "cpu"
+
         # PER
         # memory for 1-step Learning
         self.beta = beta
@@ -174,9 +175,9 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
-        # selected_action[1] = self.env.action_space(self.A2).sample()
-        selected_action[1] = np.array(0)
-
+        selected_action[1] = np.array(self.env.action_space(self.A2).sample())
+        # selected_action[1] = np.array(0)
+        
 
         if random: # select random action for both agents
             for i, agent in enumerate(self.env.agents):
@@ -385,13 +386,14 @@ class Atari_Agents:
         done = torch.FloatTensor(samples["done"].reshape(-1, 1)).to(device)
         
         # Categorical DQN algorithm
-        delta_z = float(self.v_max - self.v_min) / (self.atom_size - 1)
-
+        delta_z = float(self.v_max - self.v_min) / (self.atom_size - 1)    
+        
         with torch.no_grad():
             # Double DQN
             next_action = self.dqn[agent](next_state).argmax(1)
             next_dist = self.dqn_target[agent].dist(next_state)
-            next_dist = next_dist[range(self.batch_size), next_action]
+            indices = torch.arange(self.batch_size).to(self.device)
+            next_dist = next_dist[indices, next_action]
 
             t_z = reward + (1 - done) * gamma * self.support[agent]
             t_z = t_z.clamp(min=self.v_min, max=self.v_max)
@@ -417,7 +419,9 @@ class Atari_Agents:
             )
 
         dist = self.dqn[agent].dist(state)
-        log_p = torch.log(dist[range(self.batch_size), action])
+
+        indices = torch.arange(self.batch_size).to(self.device)
+        log_p = torch.log(dist[indices, action])
         elementwise_loss = -(proj_dist * log_p).sum(1)
 
         return elementwise_loss

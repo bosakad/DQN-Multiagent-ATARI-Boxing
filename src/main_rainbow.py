@@ -7,7 +7,7 @@ from pettingzoo.atari import boxing_v2
 import EnvPreprocess
 
 # SEED = 0
-SEED = 2
+SEED = 10
 
 def seed_torch(seed):
     torch.manual_seed(seed)
@@ -19,9 +19,10 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    # env = boxing_v2.parallel_env()
-    env = boxing_v2.parallel_env(render_mode="human")
+    env = boxing_v2.parallel_env()
+    # env = boxing_v2.parallel_env(render_mode="human")
 
+    CUDA_LAUNCH_BLOCKING=1 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
 
@@ -33,9 +34,9 @@ def train_boxing():
     # parameters
     num_frames = 2000
     memory_size = 2000
-    batch_size = 32
+    batch_size = 1
     target_update = 50
-    init_buffer_fill = 1000
+    init_buffer_fill = 0
 
     # define a suppport - might have to increase number of atoms
     v_min = -150

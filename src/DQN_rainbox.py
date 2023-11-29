@@ -28,8 +28,8 @@ class Network(nn.Module):
 
         if architectureType == "xtra-small":
 
-            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
-                                nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(),
+                                nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU())
         
             self.convOutputSize = 640 # change this if you change the convs above
 
@@ -62,6 +62,7 @@ class Network(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method implementation."""
+        
         dist = self.dist(x)
         q = torch.sum(dist * self.support, dim=2)
         
@@ -70,11 +71,11 @@ class Network(nn.Module):
     def dist(self, x: torch.Tensor) -> torch.Tensor:
         """Get distribution for atoms."""
 
-        feature = self.feature_layer(x) 
+        feature = self.feature_layer(x)     
         
         # flatten the feature layer
         feature = feature.view(-1, self.convOutputSize)
-
+        
         adv_hid = F.relu(self.advantage_hidden_layer(feature))
         val_hid = F.relu(self.value_hidden_layer(feature))
         
@@ -86,7 +87,6 @@ class Network(nn.Module):
         
         dist = F.softmax(q_atoms, dim=-1)
         dist = dist.clamp(min=1e-3)  # for avoiding nans
-        
         return dist
     
     def reset_noise(self):
