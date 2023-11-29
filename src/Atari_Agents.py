@@ -65,7 +65,8 @@ class Atari_Agents:
         # add number of agents 
         n_agents = 2,
         TAU = 0.01, # convex combination of copying
-        archType = "small" # small or big type of architecture
+        archType = "small", # small or big type of architecture
+        PATH="../results/models/dqn" # path with filename, will save as path1.pt and path2.pt 
     ):
         """Initialization.
         
@@ -90,6 +91,7 @@ class Atari_Agents:
         action_dim = 10  # the range of actions is 0-9 - the rest does not matter
         
         self.tau = TAU
+        self.PATH = PATH
 
         self.env = env
         self.batch_size = batch_size
@@ -318,7 +320,11 @@ class Atari_Agents:
         self._plot(frame_idx, np.array(scores), np.array(losses))
                 
         self.env.close()
-                
+
+        # save the models
+        torch.save(self.dqn[0].state_dict(), self.PATH + "1.pt")
+        torch.save(self.dqn[1].state_dict(), self.PATH + "2.pt")
+
     def test(self, video_folder: str, env: gym.Env) -> None:
         """Test the agent."""
         
