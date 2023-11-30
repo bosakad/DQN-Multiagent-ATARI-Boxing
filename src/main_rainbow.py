@@ -33,15 +33,15 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 2000
-    memory_size = 2000
-    batch_size = 1
-    target_update = 50
-    init_buffer_fill = 1000
+    num_frames = 10000
+    memory_size = 10000
+    batch_size = 16
+    target_update = 100
+    init_buffer_fill = 2000
 
     # define a suppport - might have to increase number of atoms
-    v_min = 0
-    v_max = 150
+    v_min = -50
+    v_max = 50
     atom_size = 51
 
     # define the architecture type
@@ -73,9 +73,10 @@ def test_boxing(PATH): # test boxing using saved models
     target_update = 20
 
     # define a suppport - might have to increase number of atoms
-    v_min = -150
+    # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
+    v_min = 0
     v_max = 150
-    atom_size = 61
+    atom_size = 51
 
         # set seed 
     np.random.seed(SEED)

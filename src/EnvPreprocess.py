@@ -19,7 +19,7 @@ def preprocess_boxing(env, width = 112, height = 147, training=True):
 
         # force the sticky actions
         if training == True:
-            env = supersuit.sticky_actions_v0(env, 0.25)
+            env = supersuit.sticky_actions_v0(env, 0.05)
 
         # take only 1 color channel - better than grayscale (computationaly)
         env = supersuit.color_reduction_v0(env, mode='G')
@@ -32,7 +32,7 @@ def preprocess_boxing(env, width = 112, height = 147, training=True):
         env = supersuit.resize_v1(env, int(width), int(height))
 
         # skip frames for faster processing and less control
-        env = supersuit.frame_skip_v0(env, 4)
+        env = supersuit.frame_skip_v0(env, 7)
 
         # allow agent to see everything on the screen despite Atari's flickering screen problem
         env = supersuit.frame_stack_v1(env, 4)  

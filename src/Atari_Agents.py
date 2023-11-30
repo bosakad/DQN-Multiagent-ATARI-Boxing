@@ -155,6 +155,7 @@ class Atari_Agents:
         self.A2 = "second_0"
 
         self.frames_cur_episode = 0
+        self.episode_num = 0
     
     def select_action(self, state: np.ndarray, random=False) -> np.ndarray:
         """Select an action from the input state."""
@@ -181,7 +182,7 @@ class Atari_Agents:
         
         # beginning - force the agent to go into each other
         if not self.is_test:
-            if self.frames_cur_episode <= 30: 
+            if self.frames_cur_episode <= 20 and self.episode_num <= 3: 
                 if self.frames_cur_episode % 2 == 0:
                     selected_action[0] = 5 # move down
                     selected_action[1] = 2 # move up
@@ -310,6 +311,7 @@ class Atari_Agents:
                 state = utils.getState(observations, self.device) # get state from the observations
 
                 self.frames_cur_episode = 0
+                self.episode_num += 1
 
                 for i in range(self.agents):
                     scores[i].append(score[i])
@@ -324,15 +326,15 @@ class Atari_Agents:
                     update_cnt[i] += 1
                     
                     # update each iteration - TODO: experiment
-                    # target_net_state_dict = self.dqn[i].state_dict()
-                    # policy_net_state_dict = self.dqn_target[i].state_dict()
-                    # for key in policy_net_state_dict:
-                    #     target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
-                    # self.dqn_target[i].load_state_dict(target_net_state_dict)
+                    target_net_state_dict = self.dqn[i].state_dict()
+                    policy_net_state_dict = self.dqn_target[i].state_dict()
+                    for key in policy_net_state_dict:
+                        target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
+                    self.dqn_target[i].load_state_dict(target_net_state_dict)
 
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        self._target_hard_update(i) # TODO: experiment with soft update
+                        # self._target_hard_update(i) # TODO: experiment with soft update
 
                         # print out the frame progress from time to time
                         if i == 0:
