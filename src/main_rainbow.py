@@ -33,11 +33,12 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 10000
-    memory_size = 10000
+    num_frames = 30000
+    memory_size = 5000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = 2000
+    init_buffer_fill = 1500
+    gamma = 0.93
 
     # define a suppport - might have to increase number of atoms
     v_min = -50
@@ -46,9 +47,12 @@ def train_boxing():
 
     # define the architecture type
     architectureType = "xtra-small"
+
+    # define path to save models
+    PATH = "../results/models/1_VS_MOVE/" + architectureType
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureType)
+                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
     agents.train(num_frames, init_buffer_fill=init_buffer_fill)
 
                                         # test the agent

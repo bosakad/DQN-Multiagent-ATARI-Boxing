@@ -8,11 +8,10 @@ from collections import deque
 from typing import Deque, Dict, List, Tuple
 
 import gymnasium as gym
-from gym_recorder import Recorder, Item
-import gym_recorder
 import numpy as np
 import torch
 import utils
+import copy
 
 from ReplayBuffer import ReplayBuffer
 from PrioritizedReplayBuffer import PrioritizedReplayBuffer
@@ -66,7 +65,8 @@ class Atari_Agents:
         n_agents = 2,
         TAU = 0.01, # convex combination of copying
         archType = "small", # small or big type of architecture
-        PATH="../results/models/dqn" # path with filename, will save as path1.pt and path2.pt 
+        PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt 
+        n_saves = 5
     ):
         """Initialization.
         
@@ -91,6 +91,8 @@ class Atari_Agents:
         
         self.tau = TAU
         self.PATH = PATH
+        self.n_saves = n_saves
+        self.saved_models = {}
 
         self.env = env
         self.batch_size = batch_size
@@ -178,7 +180,9 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
-        selected_action[1] = np.array(self.env.action_space(self.A2).sample())
+        # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
+        # selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
+        selected_action[1] = np.array(0)
         
         # beginning - force the agent to go into each other
         if not self.is_test:
@@ -271,8 +275,11 @@ class Atari_Agents:
     def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill=1000):
         """Train the agent."""
 
+        t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
+
         self.is_test = False
-        
+    
+        print(t_saves)
 
         # fill the replay buffer with some experiences
         if init_buffer_fill > 0:
@@ -342,14 +349,22 @@ class Atari_Agents:
  
             self.frames_cur_episode += 1
 
+            # save the model certain times
+            if frame_idx - 1 in t_saves:
+                model_name = f'{100 * (frame_idx - 1) / num_frames:04.1f}'.replace('.', '_')
+                self.saved_models["dqn1_" + model_name] = copy.deepcopy(self.dqn[0].state_dict())
+                self.saved_models["dqn2_" + model_name] = copy.deepcopy(self.dqn[1].state_dict())
+
         # plotting the result
         self._plot(frame_idx, np.array(scores), np.array(losses))
                 
         self.env.close()
 
         # save the models
-        torch.save(self.dqn[0].state_dict(), self.PATH + "1.pt")
-        torch.save(self.dqn[1].state_dict(), self.PATH + "2.pt")
+        self.saved_models["dqn1_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
+        self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
+
+        torch.save(self.saved_models, self.PATH + ".pt")
 
     def load(self, PATH):
         """Load the models."""
@@ -361,28 +376,39 @@ class Atari_Agents:
         
         self.is_test = True
         
-        self.dqn[0].eval() # set the evaluation mode of the model - removes the noisy
-        self.dqn[1].eval()
 
-        # create a recorder
-        self.env = env
+        for key, params in self.saved_models.items():
+            if (key.startswith("dqn2")):
+                continue
 
-        # reset the env and get the initial state        
-        state, _ = self.env.reset()
-        state = utils.getState(state, self.device) # get state from the observations
+            print("Testing: " + key)
+            
+            self.dqn[0].load_state_dict(params)
+            self.dqn[1].load_state_dict(self.saved_models[key.replace("dqn1", "dqn2")])
+            
+            self.dqn[0].eval() # set the evaluation mode of the model - removes the noisy layer
+            self.dqn[1].eval()
 
-        done = False
-        score = [0, 0]
+            # create a recorder
+            self.env = env
+
+            # reset the env and get the initial state        
+            state, _ = self.env.reset()
+            state = utils.getState(state, self.device) # get state from the observations
+
+            done = False
+            score = [0, 0]
+            
+            while not done:
+                actions = self.select_action(state)
+                next_state, reward, done = self.step(actions)
+
+                state = next_state
+                score[0] += reward[self.A1]
+                score[1] += reward[self.A2]
         
-        while not done:
-            actions = self.select_action(state)
-            next_state, reward, done = self.step(actions, )
-
-            state = next_state
-            score[0] += reward[self.A1]
-            score[1] += reward[self.A2]
+            print("score: ", score)
         
-        print("score: ", score)
         self.env.close()
         
         # reset
