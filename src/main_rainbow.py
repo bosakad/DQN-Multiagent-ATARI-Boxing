@@ -9,7 +9,7 @@ import os
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
 # SEED = 0
-SEED = 10
+SEED = 12
 
 def seed_torch(seed):
     torch.manual_seed(seed)
@@ -42,7 +42,7 @@ def train_boxing():
     # define a suppport - might have to increase number of atoms
     v_min = -150
     v_max = 150
-    atom_size = 81
+    atom_size = 51
 
     # define the architecture type
     architectureType = "xtra-small"

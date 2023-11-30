@@ -414,7 +414,7 @@ class Atari_Agents:
             proj_dist.view(-1).index_add_(
                 0, (l + offset).view(-1), (next_dist * (u.float() - b.float())).view(-1)
             )
-            print((u + offset))
+            
             proj_dist.view(-1).index_add_(
                 0, (u + offset).view(-1), (next_dist * (b.float() - l.float())).view(-1)
             )
