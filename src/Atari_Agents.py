@@ -180,9 +180,9 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
-        # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
+        selected_action[1] = np.array(self.env.action_space(self.A2).sample())
         # selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
-        selected_action[1] = np.array(0)
+        # selected_action[1] = np.array(0)
         
         # beginning - force the agent to go into each other
         if not self.is_test:
@@ -278,8 +278,6 @@ class Atari_Agents:
         t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
 
         self.is_test = False
-    
-        print(t_saves)
 
         # fill the replay buffer with some experiences
         if init_buffer_fill > 0:

@@ -41,15 +41,15 @@ def train_boxing():
     gamma = 0.93
 
     # define a suppport - might have to increase number of atoms
-    v_min = -50
-    v_max = 50
+    v_min = -100
+    v_max = 100
     atom_size = 51
 
     # define the architecture type
     architectureType = "xtra-small"
 
     # define path to save models
-    PATH = "../results/models/1_VS_MOVE/" + architectureType
+    PATH = "../results/models/1_VS_RANDOM/" + architectureType
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
                           atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
@@ -78,7 +78,7 @@ def test_boxing(PATH): # test boxing using saved models
 
     # define a suppport - might have to increase number of atoms
     # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
-    v_min = -50
+    v_min = -50 # <-50, 50>; 51 atoms with vs NOOP
     v_max = 50
     atom_size = 51
 
@@ -101,7 +101,8 @@ def test_boxing(PATH): # test boxing using saved models
 
 if __name__ == "__main__":
 
-    # train_boxing()
-    test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
+    train_boxing()
+    # test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
+    # test_boxing("../results/models/1_VS_RANDOM/xtra-small.pt")
 
 
