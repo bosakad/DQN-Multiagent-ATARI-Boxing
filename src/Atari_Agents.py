@@ -368,8 +368,7 @@ class Atari_Agents:
 
     def load(self, PATH):
         """Load the models."""
-        self.dqn[0].load_state_dict(torch.load(PATH + "1.pt"))
-        self.dqn[1].load_state_dict(torch.load(PATH + "2.pt"))
+        self.saved_models = torch.load(PATH)
 
     def test(self, env: gym.Env) -> None:
         """Test the agent."""

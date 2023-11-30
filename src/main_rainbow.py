@@ -71,15 +71,15 @@ def test_boxing(PATH): # test boxing using saved models
     env = boxing_v2.parallel_env(render_mode="human")
     env = EnvPreprocess.preprocess_boxing(env, training=False)
 
-    # parameters
+    # parameters - dont matter
     memory_size = 300
     batch_size = 32
     target_update = 20
 
     # define a suppport - might have to increase number of atoms
     # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
-    v_min = 0
-    v_max = 150
+    v_min = -50
+    v_max = 50
     atom_size = 51
 
         # set seed 
@@ -101,7 +101,7 @@ def test_boxing(PATH): # test boxing using saved models
 
 if __name__ == "__main__":
 
-    train_boxing()
-    # test_boxing("../results/models/dqn")
+    # train_boxing()
+    test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
 
 
