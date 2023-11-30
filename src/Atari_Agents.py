@@ -153,6 +153,8 @@ class Atari_Agents:
         # define agent names
         self.A1 = "first_0"
         self.A2 = "second_0"
+
+        self.frames_cur_episode = 0
     
     def select_action(self, state: np.ndarray, random=False) -> np.ndarray:
         """Select an action from the input state."""
@@ -176,8 +178,13 @@ class Atari_Agents:
 
         #  random action for the second agent
         selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        # selected_action[1] = np.array(0)
         
+        # beginning - force the agent to go into each other
+        if not self.is_test:
+            if self.frames_cur_episode <= 30: 
+                if self.frames_cur_episode % 2 == 0:
+                    selected_action[0] = 5 # move down
+                    selected_action[1] = 2 # move up
 
         if random: # select random action for both agents
             for i, agent in enumerate(self.env.agents):
@@ -265,6 +272,7 @@ class Atari_Agents:
 
         self.is_test = False
         
+
         # fill the replay buffer with some experiences
         if init_buffer_fill > 0:
             self.fill_replay_buffer(init_buffer_fill)
@@ -301,6 +309,8 @@ class Atari_Agents:
                 observations, _ = self.env.reset(seed=self.seed)
                 state = utils.getState(observations, self.device) # get state from the observations
 
+                self.frames_cur_episode = 0
+
                 for i in range(self.agents):
                     scores[i].append(score[i])
                     score[i] = 0
@@ -328,6 +338,7 @@ class Atari_Agents:
                         if i == 0:
                             print("frame: ", frame_idx)
  
+            self.frames_cur_episode += 1
 
         # plotting the result
         self._plot(frame_idx, np.array(scores), np.array(losses))
@@ -363,7 +374,7 @@ class Atari_Agents:
         
         while not done:
             actions = self.select_action(state)
-            next_state, reward, done = self.step(actions)
+            next_state, reward, done = self.step(actions, )
 
             state = next_state
             score[0] += reward[self.A1]

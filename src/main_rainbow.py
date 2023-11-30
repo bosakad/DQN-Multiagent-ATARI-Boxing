@@ -21,8 +21,8 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    env = boxing_v2.parallel_env()
-    # env = boxing_v2.parallel_env(render_mode="human")
+    # env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
@@ -37,10 +37,10 @@ def train_boxing():
     memory_size = 2000
     batch_size = 1
     target_update = 50
-    init_buffer_fill = 0
+    init_buffer_fill = 1000
 
     # define a suppport - might have to increase number of atoms
-    v_min = -150
+    v_min = 0
     v_max = 150
     atom_size = 51
 
