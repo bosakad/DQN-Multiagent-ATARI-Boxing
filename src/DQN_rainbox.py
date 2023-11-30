@@ -14,7 +14,7 @@ class Network(nn.Module):
         out_dim: int, 
         atom_size: int, 
         support: torch.Tensor,
-        architectureSmall = True
+        architectureType = "small",
     ):
         """Initialization."""
         super(Network, self).__init__()
@@ -26,14 +26,21 @@ class Network(nn.Module):
         # set feature layer
         historyLen = in_dim[0]
 
-        if architectureSmall:
+        if architectureType == "xtra-small":
+
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
+                                nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
+        
+            self.convOutputSize = 640 # change this if you change the convs above
+
+        elif architectureType == "small":
 
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
                                 nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(64))
         
             self.convOutputSize = 1280 # change this if you change the convs above
 
-        else: # architecture is large
+        elif architectureType == "big": # architecture is large
 
              # set feature layer - TODO: experiment with adding the last layer? If it learns better
             self.feature_layer = nn.Sequential(nn.Conv2d(in_dim[0], 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
@@ -55,6 +62,7 @@ class Network(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method implementation."""
+        
         dist = self.dist(x)
         q = torch.sum(dist * self.support, dim=2)
         
@@ -63,11 +71,11 @@ class Network(nn.Module):
     def dist(self, x: torch.Tensor) -> torch.Tensor:
         """Get distribution for atoms."""
 
-        feature = self.feature_layer(x) 
+        feature = self.feature_layer(x)     
         
         # flatten the feature layer
         feature = feature.view(-1, self.convOutputSize)
-
+        
         adv_hid = F.relu(self.advantage_hidden_layer(feature))
         val_hid = F.relu(self.value_hidden_layer(feature))
         
@@ -79,7 +87,6 @@ class Network(nn.Module):
         
         dist = F.softmax(q_atoms, dim=-1)
         dist = dist.clamp(min=1e-3)  # for avoiding nans
-        
         return dist
     
     def reset_noise(self):

@@ -5,8 +5,11 @@ import torch
 from Atari_Agents import Atari_Agents
 from pettingzoo.atari import boxing_v2
 import EnvPreprocess
+import os
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
-SEED = 42
+# SEED = 0
+SEED = 12
 
 def seed_torch(seed):
     torch.manual_seed(seed)
@@ -18,7 +21,8 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    env = boxing_v2.parallel_env()
+    # env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
@@ -29,59 +33,75 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 10000
-    memory_size = 10000
-    batch_size = 6
+    num_frames = 30000
+    memory_size = 5000
+    batch_size = 16
     target_update = 100
+    init_buffer_fill = 1500
+    gamma = 0.93
+
+    # define a suppport - might have to increase number of atoms
+    v_min = -50
+    v_max = 50
+    atom_size = 51
+
+    # define the architecture type
+    architectureType = "xtra-small"
+
+    # define path to save models
+    PATH = "../results/models/1_VS_MOVE/" + architectureType
     
-    agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED)
-    agents.train(num_frames)
+    agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
+                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
+    agents.train(num_frames, init_buffer_fill=init_buffer_fill)
 
                                         # test the agent
     # create a new env with rendering                                    
     env.close()
     env = boxing_v2.parallel_env(render_mode="human")
-    env = EnvPreprocess.preprocess_boxing(env)
+    env = EnvPreprocess.preprocess_boxing(env, training=False)
     
-    video_folder="../results/videos/rainbow"
-    agents.test(video_folder, env)
+    agents.test(env)
 
     env.close()
 
 
-def train_cartPole():
-    # environment
-    env = gym.make("CartPole-v1", max_episode_steps=200, render_mode="rgb_array")
+def test_boxing(PATH): # test boxing using saved models
 
-    seed = 777
+    env = boxing_v2.parallel_env(render_mode="human")
+    env = EnvPreprocess.preprocess_boxing(env, training=False)
 
-    def seed_torch(seed):
-        torch.manual_seed(seed)
-        if torch.backends.cudnn.enabled:
-            torch.cuda.manual_seed(seed)
-            torch.backends.cudnn.benchmark = False
-            torch.backends.cudnn.deterministic = True
+    # parameters - dont matter
+    memory_size = 300
+    batch_size = 32
+    target_update = 20
 
-    np.random.seed(seed)
-    random.seed(seed)
-    seed_torch(seed)
+    # define a suppport - might have to increase number of atoms
+    # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
+    v_min = -50
+    v_max = 50
+    atom_size = 51
 
-    # parameters
-    num_frames = 1000
-    memory_size = 10000
-    batch_size = 128
-    target_update = 100
+        # set seed 
+    np.random.seed(SEED)
+    random.seed(SEED)
+    seed_torch(SEED)
 
-    # train
-    agents = Atari_Agents(env, memory_size, batch_size, target_update, seed)
+    # define the architecture type
+    architectureType = "xtra-small"
+    
+    agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
+                          atom_size=atom_size, archType=architectureType)
+    
+    agents.load(PATH) # load the models
+    agents.test(env)
 
-    agents.train(num_frames)
 
-    video_folder="../results/videos/rainbow"
-    agents.test(video_folder=video_folder)
-
+    env.close()
 
 if __name__ == "__main__":
 
-    # train_cartPole()
-    train_boxing()
+    # train_boxing()
+    test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
+
+
