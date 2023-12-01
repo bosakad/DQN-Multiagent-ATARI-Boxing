@@ -181,8 +181,9 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
+        selected_action[1] = np.array(self.env.action_space(self.A2).sample())
+        # selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
         # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
         # selected_action[1] = np.array(0)
         
         # beginning - force the agent to go into each other
@@ -279,8 +280,6 @@ class Atari_Agents:
         t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
 
         self.is_test = False
-    
-        print(t_saves)
 
         # fill the replay buffer with some experiences
         if init_buffer_fill > 0:
@@ -328,6 +327,9 @@ class Atari_Agents:
             # if training is ready - update the models
             for i in range(self.agents):
 
+                if agent == 1: # dont train the second agent
+                    continue
+
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
                     losses[i].append(loss)
@@ -366,6 +368,11 @@ class Atari_Agents:
         self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
 
         torch.save(self.saved_models, self.PATH + ".pt")
+
+    def load_params(self, PATH):
+        """Load pretrained parameters."""
+        self.dqn[0].load_state_dict(torch.load(PATH)["dqn1_100_0"]) # last params saved
+        self.dqn[1].load_state_dict(torch.load(PATH)["dqn2_100_0"])
 
     def load(self, PATH):
         """Load the models."""
