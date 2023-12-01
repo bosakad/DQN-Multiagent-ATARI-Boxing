@@ -13,7 +13,7 @@ mkdir -p "logs/"
 
 ### General options
 ### –- specify queue --
-# BSUB -q gpua100
+# BSUB -q gpuv100
 ### -- set the job Name --
 #BSUB -J rl_1vRand
 ### -- ask for number of cores (default: 1) -- 
