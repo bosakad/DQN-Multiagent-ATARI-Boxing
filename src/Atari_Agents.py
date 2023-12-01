@@ -61,10 +61,10 @@ class Atari_Agents:
         v_max: float = 200.0,
         atom_size: int = 51,
         # N-step Learning
-        n_step: int = 2,
+        n_step: int = 3,
         # add number of agents 
         n_agents = 2,
-        TAU = 0.01, # convex combination of copying
+        TAU = 0.05, # convex combination of copying
         archType = "small", # small or big type of architecture
         PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt 
         n_saves = 5
@@ -325,9 +325,9 @@ class Atari_Agents:
 
             # if training is ready - update the models
             for i in range(self.agents):
-
-                if agent == 1: # dont train the second agent
-                    continue
+                
+                # if i == 1: # dont train the second agent, TODO: remove this for both agents to learn    
+                #     continue
 
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
