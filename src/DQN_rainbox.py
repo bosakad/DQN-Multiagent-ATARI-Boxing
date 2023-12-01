@@ -43,7 +43,7 @@ class Network(nn.Module):
         elif architectureType == "big": # architecture is large
 
              # set feature layer - TODO: experiment with adding the last layer? If it learns better
-            self.feature_layer = nn.Sequential(nn.Conv2d(in_dim[0], 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
                                 nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
                                 nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
                             #    nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(128),
@@ -51,6 +51,19 @@ class Network(nn.Module):
             
             self.convOutputSize = 8960 # change this if you change the convs above
         
+        elif architectureType == "alexnet": # the AlexNet (ish) architecture 
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, kernel_size=9, stride=2, padding=0), nn.ReLU(),
+                                               nn.MaxPool2d(kernel_size=3, stride=2), 
+                                               nn.BatchNorm2d(32),
+                                               nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2), nn.ReLU(),
+                                               nn.MaxPool2d(kernel_size=3, stride=2),
+                                               nn.BatchNorm2d(64),
+                                               nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1), nn.ReLU(),
+                                               nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1), nn.ReLU(),
+                                               nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1), nn.ReLU(),
+                                               nn.MaxPool2d(kernel_size=3, stride=2),
+                                               )
+            self.convOutputSize = 8960 # remember to change if changes to the CNN is made 
 
         # set advantage layer
         self.advantage_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize) 
