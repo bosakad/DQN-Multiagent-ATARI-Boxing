@@ -47,8 +47,8 @@ def train_boxing():
 
     # define the architecture type
     # architectureType = "xtra-small"
-    architectureType = "small"
-    # architectureType = "big"
+    # architectureType = "small"
+    architectureType = "big"
 
     # define path to save models
     PATH = "../results/models/1_VS_RANDOM/" + architectureType + "_finetuned3"
@@ -57,12 +57,12 @@ def train_boxing():
                           atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
     
     # uncomment next line to load pretrained models
-    agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
+    # agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
 
     # train the agent
     agents.train(num_frames, init_buffer_fill=init_buffer_fill)
 
-                                        # test the agent
+    # test the agent
     # create a new env with rendering                                    
     env.close()
     env = boxing_v2.parallel_env(render_mode="human")

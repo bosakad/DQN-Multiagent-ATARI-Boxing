@@ -183,7 +183,6 @@ class Atari_Agents:
         #  random action for the second agent
         selected_action[1] = np.array(self.env.action_space(self.A2).sample())
         # selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
-        # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
         # selected_action[1] = np.array(0)
         
         # beginning - force the agent to go into each other
