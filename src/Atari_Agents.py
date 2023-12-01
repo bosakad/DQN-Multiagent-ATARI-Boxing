@@ -4,6 +4,7 @@ import torch.optim as optim
 from IPython.display import clear_output
 from torch.nn.utils import clip_grad_norm_
 import matplotlib.pyplot as plt
+import seaborn as sns
 from collections import deque
 from typing import Deque, Dict, List, Tuple
 
@@ -17,7 +18,7 @@ from ReplayBuffer import ReplayBuffer
 from PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from DQN_rainbox import Network
 
-
+sns.set()
 
 
 class Atari_Agents:
@@ -181,8 +182,8 @@ class Atari_Agents:
 
         #  random action for the second agent
         # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        # selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
-        selected_action[1] = np.array(0)
+        selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
+        # selected_action[1] = np.array(0)
         
         # beginning - force the agent to go into each other
         if not self.is_test:
@@ -517,15 +518,39 @@ class Atari_Agents:
     ):
         """Plot the training progresses."""
         clear_output(True)
-        plt.figure(figsize=(20, 5))
-        plt.subplot(131)
-        plt.title('frame %s. score_A1: %s. score_A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
-        plt.plot(scores[0])
-        plt.plot(scores[1])
-        plt.legend(["score A1", "score A2"])
-        plt.subplot(132)
-        plt.title('loss')
-        plt.plot(losses[0])
-        plt.plot(losses[1])
-        plt.legend(["loss A1", "loss A2"])
+        
+        smooth_y = lambda K, y : np.convolve(y, np.ones(K)/K, mode='same')
+        
+        fig, axs = plt.subplots(1,2,figsize=(16,5))
+        # score plot
+        axs[0].set_title('Frame %s. Score A1: %s. Score A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
+        axs[0].plot(scores[0], "b", label="A1")
+        axs[0].plot(scores[1], "r", label="A2")
+        axs[0].set_xlabel("Episode")
+        axs[0].set_ylabel("Score")
+        # loss plot 
+        axs[1].set_title("Training Loss (w. Running average)")
+        axs[1].plot(losses[0], "b", alpha=0.25)
+        axs[1].plot(smooth_y(20,losses[0]), "b", label="A1")
+        axs[1].plot(losses[1], "r", alpha=0.25)
+        axs[1].plot(smooth_y(20,losses[1]), "r", label="A2")
+        axs[1].set_xlabel("Frame")
+        axs[1].set_ylabel("Loss")
+        # set common things 
+        for ax in axs:
+            ax.legend()
+        
         plt.show()
+        
+        # plt.figure(figsize=(20, 5))
+        # plt.subplot(131)
+        # plt.title('frame %s. score_A1: %s. score_A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
+        # plt.plot(scores[0])
+        # plt.plot(scores[1])
+        # plt.legend(["score A1", "score A2"])
+        # plt.subplot(132)
+        # plt.title('loss')
+        # plt.plot(losses[0])
+        # plt.plot(losses[1])
+        # plt.legend(["loss A1", "loss A2"])
+        # plt.show()
