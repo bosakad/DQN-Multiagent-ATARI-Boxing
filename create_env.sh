@@ -21,7 +21,7 @@ if [ $( basename $PWD ) = "DQN_Multiagent-ATARI-Boxing" ]
 then 
     echo "Virtual environment created at $PWD"
 else
-    echo "\e[33mWARN: Virtual environment was not created with ROI_inner_ear as basename, instead it was created at $PWD\e[0m"
+    echo "\e[33mWARN: Virtual environment was not created with DQN_Multiagent-ATARI-Boxing as basename, instead it was created at $PWD\e[0m"
 fi
 
 deactivate
