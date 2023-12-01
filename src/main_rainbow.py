@@ -21,7 +21,8 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    env = boxing_v2.parallel_env()
+    # env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(auto_rom_install_path="ROMS/")
     # env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
