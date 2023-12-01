@@ -9,6 +9,10 @@ ROMS/*
 messynotebook.ipynb
 rl_env
 
+# HPC stuff 
+batchjob.sh
+create_env.sh
+
 # adam's stuff
 activate.sh
 
