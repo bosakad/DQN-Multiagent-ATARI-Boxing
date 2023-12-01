@@ -529,7 +529,7 @@ class Atari_Agents:
         axs[0].set_xlabel("Episode")
         axs[0].set_ylabel("Score")
         # loss plot 
-        axs[1].set_title("Training Loss (w. Running average)")
+        axs[1].set_title("Training Loss (w. Running Average)")
         axs[1].plot(losses[0], "b", alpha=0.25)
         axs[1].plot(smooth_y(20,losses[0]), "b", label="A1")
         axs[1].plot(losses[1], "r", alpha=0.25)
@@ -541,16 +541,3 @@ class Atari_Agents:
             ax.legend()
         
         plt.show()
-        
-        # plt.figure(figsize=(20, 5))
-        # plt.subplot(131)
-        # plt.title('frame %s. score_A1: %s. score_A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
-        # plt.plot(scores[0])
-        # plt.plot(scores[1])
-        # plt.legend(["score A1", "score A2"])
-        # plt.subplot(132)
-        # plt.title('loss')
-        # plt.plot(losses[0])
-        # plt.plot(losses[1])
-        # plt.legend(["loss A1", "loss A2"])
-        # plt.show()
