@@ -47,14 +47,16 @@ def train_boxing():
 
     # define the architecture type
     # architectureType = "xtra-small"
-    architectureType = "small"
-    # architectureType = "big"
+    # architectureType = "small"
+    architectureType = "big"
 
     # define path to save models
-    PATH = "../results/models/1_VS_RANDOM/" + architectureType + "_small"
+    PATH = "../results/models/1_VS_RANDOM/" + architectureType
+    FIG_PATH = f"../results/figures/1vRand_{architectureType}.pdf"
+    
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
+                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH, fig_path=FIG_PATH)
     
     # uncomment next line to load pretrained models
     # agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
