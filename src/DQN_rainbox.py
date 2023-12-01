@@ -41,13 +41,11 @@ class Network(nn.Module):
             self.convOutputSize = 1280 # change this if you change the convs above
 
         elif architectureType == "big": # architecture is large
-
-        # set feature layer - TODO: experiment with adding the last layer? If it learns better
-        self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
-                                nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
-                                nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
-                            #    nn.Conv2d(64, 128, 1, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(128),
-                                )
+            # set feature layer - TODO: experiment with adding the last layer? If it learns better
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 8, stride=4, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+                                               nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
+                                               nn.Conv2d(64, 64, 3, stride=1, padding=0), nn.ReLU(), nn.BatchNorm2d(64),
+                                    )
             
             self.convOutputSize = 8960 # change this if you change the convs above
         
