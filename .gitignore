@@ -1,5 +1,6 @@
-# models 
-results/models/*
+# training outputs 
+results/*
+
 # roms 
 ROMS/*
 
