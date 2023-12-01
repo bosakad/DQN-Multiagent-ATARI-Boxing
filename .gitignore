@@ -1,5 +1,7 @@
 results/models/*
 ROMS/*
+messynotebook.ipynb
+
 activate.sh
 src/__pycache__/__init__.cpython-38.pyc
 src/__pycache__/EpsilonScheduler.cpython-38.pyc
