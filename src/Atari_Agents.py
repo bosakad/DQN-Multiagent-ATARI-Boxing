@@ -66,7 +66,8 @@ class Atari_Agents:
         n_agents = 2,
         TAU = 0.05, # convex combination of copying
         archType = "small", # small or big type of architecture
-        PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt 
+        PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt
+        fig_path = "../results/figures",
         n_saves = 5
     ):
         """Initialization.
@@ -92,6 +93,7 @@ class Atari_Agents:
         
         self.tau = TAU
         self.PATH = PATH
+        self.fig_path = fig_path
         self.n_saves = n_saves
         self.saved_models = {}
 
@@ -546,4 +548,4 @@ class Atari_Agents:
         for ax in axs:
             ax.legend()
         
-        plt.show()
+        plt.savefig(self.fig_path)
