@@ -38,7 +38,7 @@ def train_boxing():
     memory_size = 8000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = 3000
+    init_buffer_fill = 1500
     gamma = 0.90
 
     # define a suppport - might have to increase number of atoms
