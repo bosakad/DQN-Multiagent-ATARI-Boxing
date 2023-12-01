@@ -325,6 +325,9 @@ class Atari_Agents:
             # if training is ready - update the models
             for i in range(self.agents):
 
+                if agent == 1: # dont train the second agent
+                    continue
+
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
                     losses[i].append(loss)
@@ -363,6 +366,11 @@ class Atari_Agents:
         self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
 
         torch.save(self.saved_models, self.PATH + ".pt")
+
+    def load_params(self, PATH):
+        """Load pretrained parameters."""
+        self.dqn[0].load_state_dict(torch.load(PATH)["dqn1_100_0"]) # last params saved
+        self.dqn[1].load_state_dict(torch.load(PATH)["dqn2_100_0"])
 
     def load(self, PATH):
         """Load the models."""
