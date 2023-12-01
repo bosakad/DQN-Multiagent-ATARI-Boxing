@@ -13,10 +13,6 @@ def preprocess_boxing(env, width = 112, height = 147, training=True):
     NOTE: Final observation space: (height, width, 4 = number of frames stacked)
     """
 
-    # try out other width and height
-    width = 70
-    height = 84
-
     with warnings.catch_warnings(): # ignore rendering warnings
         warnings.simplefilter("ignore")
 
