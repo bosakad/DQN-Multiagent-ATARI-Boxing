@@ -37,7 +37,7 @@ def train_boxing():
     memory_size = 8000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = 3000
+    init_buffer_fill = 1500
     gamma = 0.90
 
     # define a suppport - might have to increase number of atoms
@@ -47,11 +47,11 @@ def train_boxing():
 
     # define the architecture type
     # architectureType = "xtra-small"
-    architectureType = "small"
-    # architectureType = "big"
+    # architectureType = "small"
+    architectureType = "big"
 
     # define path to save models
-    PATH = "../results/models/1_VS_RANDOM/" + architectureType + "_small"
+    PATH = "../results/models/1_VS_RANDOM/" + architectureType
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
                           atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
