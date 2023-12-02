@@ -97,9 +97,9 @@ def test_boxing(PATH): # test boxing using saved models
 
     # define a suppport - might have to increase number of atoms
     # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
-    v_min = -30 # <-50, 50>; 51 atoms with vs NOOP
-    v_max = 30
-    atom_size = 51
+    v_min = -100 # <-50, 50>; 51 atoms with vs NOOP <-30, 30> with 51 for random
+    v_max = 100
+    atom_size = 102
 
         # set seed 
     np.random.seed(SEED)
@@ -109,10 +109,11 @@ def test_boxing(PATH): # test boxing using saved models
     # define the architecture type - this has to match the architecture type of the model
     # architectureType = "xtra-small"
     # architectureType = "small"
-    architectureType = "big"
+    architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
+
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureType)
+                          atom_size=atom_size, archType=architectureTypes)
     
     agents.load(PATH) # load the models
     agents.test(env)
