@@ -97,6 +97,10 @@ class Atari_Agents:
         )
         print(self.device)
 
+        # define agent names
+        self.A1 = "first_0"
+        self.A2 = "second_0"
+
         # PER
         # memory for 1-step Learning
         self.beta = beta
@@ -121,10 +125,10 @@ class Atari_Agents:
                         torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device)]
 
         # networks: dqn, dqn_target for each agent
-        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archType).to(self.device),
-                    Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archType).to(self.device)]
-        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archType).to(self.device),
-                           Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archType).to(self.device)]
+        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archTypes[self.A1]).to(self.device),
+                    Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archTypes[self.A2]).to(self.device)]
+        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archTypes[self.A1]).to(self.device),
+                           Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archTypes[self.A2]).to(self.device)]
         
         for i, net in enumerate(self.dqn_target):
             net.load_state_dict(self.dqn[i].state_dict())
@@ -140,10 +144,7 @@ class Atari_Agents:
         # mode: train / test
         self.is_test = False
 
-        # define agent names
-        self.A1 = "first_0"
-        self.A2 = "second_0"
-
+        # information needed for the init buffer fill
         self.frames_cur_episode = 0
         self.episode_num = 0
     
@@ -259,16 +260,16 @@ class Atari_Agents:
 
         return loss.item()
         
-    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill=1000):
+    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill={}):
         """Train the agent."""
 
         t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
 
         self.is_test = False
 
-        # fill the replay buffer with some experiences
-        if init_buffer_fill > 0:
-            self.fill_replay_buffer(init_buffer_fill)
+        # fill the replay buffer with some experiences - TODO: change to two
+        if init_buffer_fill[self.A1] > 0:
+            self.fill_replay_buffer(init_buffer_fill[self.A1])
 
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)

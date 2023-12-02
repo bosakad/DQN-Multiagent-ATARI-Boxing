@@ -29,7 +29,7 @@ class Network(nn.Module):
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
                                 nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
         
-            self.convOutputSize = 640 # change this if you change the convs above
+            self.convOutputSize = 288 # change this if you change the convs above
 
         elif architectureType == "small":
 
