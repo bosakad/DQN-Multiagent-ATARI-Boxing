@@ -61,12 +61,13 @@ class Atari_Agents:
         v_max: float = 200.0,
         atom_size: int = 51,
         # N-step Learning
-        n_step: int = 2,
+        n_step: int = 3,
         # add number of agents 
         n_agents = 2,
-        TAU = 0.01, # convex combination of copying
+        TAU = 0.05, # convex combination of copying
         archType = "small", # small or big type of architecture
-        PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt 
+        PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt
+        fig_path = "../results/figures",
         n_saves = 5
     ):
         """Initialization.
@@ -92,6 +93,7 @@ class Atari_Agents:
         
         self.tau = TAU
         self.PATH = PATH
+        self.fig_path = fig_path
         self.n_saves = n_saves
         self.saved_models = {}
 
@@ -144,8 +146,8 @@ class Atari_Agents:
             net.eval()
         
         # optimizer
-        self.optimizer = [optim.Adam(self.dqn[0].parameters()),
-                          optim.Adam(self.dqn[1].parameters())]
+        self.optimizer = [optim.Adam(self.dqn[0].parameters(), lr=0.0005),
+                          optim.Adam(self.dqn[1].parameters(), lr=0.0005)]
 
         # transition to store in memory
         self.transition = [list(), list()]
@@ -181,10 +183,8 @@ class Atari_Agents:
         selected_action[0] = selected_action[0].detach().cpu().numpy()
 
         #  random action for the second agent
-        selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        # selected_action[1] = np.array(np.random.choice([0, 2, 3, 4, 5, 6, 7, 8, 9]))
         # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        # selected_action[1] = np.array(0)
+        selected_action[1] = np.array(np.random.choice(np.arange(0, 17)))
         
         # beginning - force the agent to go into each other
         if not self.is_test:
@@ -326,9 +326,9 @@ class Atari_Agents:
 
             # if training is ready - update the models
             for i in range(self.agents):
-
-                if agent == 1: # dont train the second agent
-                    continue
+                
+                # if i == 1: # dont train the second agent, TODO: remove this for both agents to learn    
+                #     continue
 
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
@@ -336,15 +336,15 @@ class Atari_Agents:
                     update_cnt[i] += 1
                     
                     # update each iteration - TODO: experiment
-                    target_net_state_dict = self.dqn[i].state_dict()
-                    policy_net_state_dict = self.dqn_target[i].state_dict()
-                    for key in policy_net_state_dict:
-                        target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
-                    self.dqn_target[i].load_state_dict(target_net_state_dict)
+                    # target_net_state_dict = self.dqn[i].state_dict()
+                    # policy_net_state_dict = self.dqn_target[i].state_dict()
+                    # for key in policy_net_state_dict:
+                    #     target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
+                    # self.dqn_target[i].load_state_dict(target_net_state_dict)
 
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        # self._target_hard_update(i) # TODO: experiment with soft update
+                        self._target_hard_update(i) # TODO: experiment with soft update
 
                         # print out the frame progress from time to time
                         if i == 0:
@@ -547,4 +547,4 @@ class Atari_Agents:
         for ax in axs:
             ax.legend()
         
-        plt.show()
+        plt.savefig(self.fig_path)

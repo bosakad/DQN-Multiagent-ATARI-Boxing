@@ -1,8 +1,22 @@
-results/models/*
-ROMS/*
-messynotebook.ipynb
+# training outputs 
+results/*
+logs/*
 
+# roms 
+ROMS/*
+
+# teo's stuff
+messynotebook.ipynb
+rl_env
+
+# HPC stuff 
+batchjob.sh
+create_env.sh
+
+# adam's stuff
 activate.sh
+
+# pycache 
 src/__pycache__/__init__.cpython-38.pyc
 src/__pycache__/EpsilonScheduler.cpython-38.pyc
 tests/__pycache__/__init__.cpython-38.pyc

@@ -9,7 +9,7 @@ import os
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
 # SEED = 0
-SEED = 13
+SEED = 14
 
 def seed_torch(seed):
     torch.manual_seed(seed)
@@ -21,7 +21,8 @@ def seed_torch(seed):
 def train_boxing():
 
     # environment 
-    env = boxing_v2.parallel_env()
+    # env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(auto_rom_install_path="ROMS/")
     # env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
@@ -33,36 +34,38 @@ def train_boxing():
     seed_torch(SEED)
     
     # parameters
-    num_frames = 30000
+    num_frames = 40000
     memory_size = 10000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = 500
-    gamma = 0.90
+    init_buffer_fill = 100
+    gamma = 0.92
 
     # define a suppport - might have to increase number of atoms
-    v_min = -100
-    v_max = 100
-    atom_size = 61
+    v_min = -30
+    v_max = 30
+    atom_size = 51
 
     # define the architecture type
     # architectureType = "xtra-small"
-    architectureType = "small"
-    # architectureType = "big"
+    # architectureType = "small"
+    architectureType = "big"
 
     # define path to save models
-    PATH = "../results/models/1_VS_RANDOM/" + architectureType + "_finetuned3"
+    PATH = "../results/models/1_VS_RANDOM/" + architectureType
+    FIG_PATH = f"../results/figures/1vRand_{architectureType}.pdf"
+    
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH)
+                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH, fig_path=FIG_PATH)
     
     # uncomment next line to load pretrained models
-    agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
+    # agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
 
     # train the agent
     agents.train(num_frames, init_buffer_fill=init_buffer_fill)
 
-                                        # test the agent
+    # test the agent
     # create a new env with rendering                                    
     env.close()
     env = boxing_v2.parallel_env(render_mode="human")
@@ -85,9 +88,9 @@ def test_boxing(PATH): # test boxing using saved models
 
     # define a suppport - might have to increase number of atoms
     # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
-    v_min = -100 # <-50, 50>; 51 atoms with vs NOOP
-    v_max = 100
-    atom_size = 61
+    v_min = -30 # <-50, 50>; 51 atoms with vs NOOP
+    v_max = 30
+    atom_size = 51
 
         # set seed 
     np.random.seed(SEED)
@@ -96,7 +99,8 @@ def test_boxing(PATH): # test boxing using saved models
 
     # define the architecture type
     # architectureType = "xtra-small"
-    architectureType = "small"
+    # architectureType = "small"
+    architectureType = "big"
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
                           atom_size=atom_size, archType=architectureType)
@@ -109,8 +113,8 @@ def test_boxing(PATH): # test boxing using saved models
 
 if __name__ == "__main__":
 
-    train_boxing()
+    # train_boxing()
     # test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
-    # test_boxing("../results/models/1_VS_RANDOM/small_finetuned2.pt")
+    test_boxing("../results/models/1_VS_RANDOM/big.pt")
 
 
