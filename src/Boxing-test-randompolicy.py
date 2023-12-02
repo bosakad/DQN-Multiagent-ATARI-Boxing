@@ -62,8 +62,8 @@ while env.agents:
         # plt.show()
         # plt.imshow(obs1[:, :, 2], cmap="gray")
         # plt.show()
-    # plt.imshow(obs1[:, :, 3], cmap="gray")
-    # plt.show()
+    plt.imshow(obs1[:, :, 3], cmap="gray")
+    plt.show()
 
 
     i += 1
