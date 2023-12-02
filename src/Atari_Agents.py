@@ -24,24 +24,7 @@ sns.set()
 class Atari_Agents:
     """DQN Agent interacting with environment.
     
-    Attribute:
-        env (gym.Env): openAI Gym environment
-        memory (PrioritizedReplayBuffer): replay memory to store transitions
-        batch_size (int): batch size for sampling
-        target_update (int): period for target model's hard update
-        gamma (float): discount factor
-        dqn (Network): model to train and select actions
-        dqn_target (Network): target model to update
-        optimizer (torch.optim): optimizer for training dqn
-        transition (list): transition information including 
-                           state, action, reward, next_state, done
-        v_min (float): min value of support
-        v_max (float): max value of support
-        atom_size (int): the unit number of support
-        support (torch.Tensor): support for categorical dqn
-        use_n_step (bool): whether to use n_step memory
-        n_step (int): step number to calculate n-step td error
-        memory_n (ReplayBuffer): n-step replay buffer
+        defines the train and test of agents in the boxing scenario
     """
 
     def __init__(
@@ -65,7 +48,7 @@ class Atari_Agents:
         # add number of agents 
         n_agents = 2,
         TAU = 0.05, # convex combination of copying
-        archType = "small", # small or big type of architecture
+        archTypes = {"first_0": "xtra-small", "second_0": "small"}, # small or big type of architecture
         PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt
         fig_path = "../results/figures",
         n_saves = 5
@@ -86,6 +69,10 @@ class Atari_Agents:
             v_max (float): max value of support
             atom_size (int): the unit number of support
             n_step (int): step number to calculate n-step td error
+            archTypes ({str}): architecture type of the network
+            PATH (str): path to save the models
+            fig_path (str): path to save the figures
+            n_saves (int): number of saves
         """
         obsShapeOrig = env.observation_space("first_0").shape
         obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
@@ -102,15 +89,13 @@ class Atari_Agents:
         self.target_update = target_update
         self.seed = seed
         self.gamma = gamma
-        self.agents = n_agents # added #agents 
-        # NoisyNet: All attributes related to epsilon are removed
+        self.agents = n_agents 
         
         # device: cpu / gpu
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         print(self.device)
-        # self.device = "cpu"
 
         # PER
         # memory for 1-step Learning
