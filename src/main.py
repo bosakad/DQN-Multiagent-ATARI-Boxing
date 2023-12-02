@@ -22,8 +22,7 @@ def train_boxing():
 
     # environment 
     # env = boxing_v2.parallel_env()
-    env = boxing_v2.parallel_env(auto_rom_install_path="ROMS/")
-    # env = boxing_v2.parallel_env(render_mode="human")
+    env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
@@ -33,37 +32,47 @@ def train_boxing():
     random.seed(SEED)
     seed_torch(SEED)
     
-    # parameters
-    num_frames = 40000
-    memory_size = 10000
+    ############################################### parameters ###############################################
+    
+    num_frames = 1000
+    memory_size = 1000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = 100
+    init_buffer_fill = {"first_0": 100, "second_0": 0} # fill the buffer with closeup-random actions
     gamma = 0.92
 
     # define a suppport - might have to increase number of atoms
-    v_min = -30
-    v_max = 30
-    atom_size = 51
+    v_min = -100
+    v_max = 100
+    atom_size = 102
 
-    # define the architecture type
+    # define the architecture types
     # architectureType = "xtra-small"
     # architectureType = "small"
-    architectureType = "big"
+    architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
 
     # define path to save models
-    PATH = "../results/models/1_VS_RANDOM/" + architectureType
-    FIG_PATH = f"../results/figures/1vRand_{architectureType}.pdf"
+    PATH = "../results/models/1_VS_1/" + architectureTypes["first_0"] + "_"\
+                                    + architectureTypes["second_0"] + "_BF1_" +\
+                                    init_buffer_fill["first_0"] + "BF2_" + init_buffer_fill["second_0"]
+    FIG_PATH = f"../results/figures/1v1_" + architectureTypes["first_0"] + "_"\
+                                            + architectureTypes["second_0"] + "_BF1_" +\
+                            init_buffer_fill["first_0"] + "BF2_" + init_buffer_fill["second_0"] + ".pdf"
     
+
+    ############################################### training ###############################################
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureType, gamma=gamma, PATH=PATH, fig_path=FIG_PATH)
+                          atom_size=atom_size, archType=architectureTypes, gamma=gamma, PATH=PATH, fig_path=FIG_PATH)
     
     # uncomment next line to load pretrained models
     # agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
 
     # train the agent
     agents.train(num_frames, init_buffer_fill=init_buffer_fill)
+
+
+    ############################################### testing ###############################################
 
     # test the agent
     # create a new env with rendering                                    
@@ -97,7 +106,7 @@ def test_boxing(PATH): # test boxing using saved models
     random.seed(SEED)
     seed_torch(SEED)
 
-    # define the architecture type
+    # define the architecture type - this has to match the architecture type of the model
     # architectureType = "xtra-small"
     # architectureType = "small"
     architectureType = "big"
@@ -113,8 +122,8 @@ def test_boxing(PATH): # test boxing using saved models
 
 if __name__ == "__main__":
 
-    # train_boxing()
+    train_boxing()
     # test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
-    test_boxing("../results/models/1_VS_RANDOM/big.pt")
+    # test_boxing("../results/models/1_VS_RANDOM/big.pt")
 
 
