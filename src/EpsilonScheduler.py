@@ -1,21 +1,21 @@
 import numpy as np
 
 class EpsilonScheduler:
-    def __init__(self, EPS_START, EPS_END, EPS_DECAY):
+    def __init__(self, value_from, value_to, num_steps):
         """Exponential schedule from `value_from` to `value_to` in `num_steps` steps.
 
         $value(t) = a \exp (b t)$
 
-        :param EPS_START: initial value
-        :param EPS_END: final value
-        :param EPS_DECAY: decay rate
+        :param value_from: initial value
+        :param value_to: final value
+        :param num_steps: number of steps for the exponential schedule
         """
+        self.value_from = value_from
+        self.value_to = value_to
+        self.num_steps = num_steps
 
-        self.EPS_END = EPS_END
-        self.EPS_START = EPS_START
-        self.EPS_DECAY = EPS_DECAY
-
-        self.a = EPS_END + (EPS_START - EPS_END)
+        self.a = value_from
+        self.b = np.log(value_to / value_from) / (num_steps - 1)
 
     def value(self, step) -> float:
         """Return exponentially interpolated value between `value_from` and `value_to`interpolated value between.
@@ -24,7 +24,12 @@ class EpsilonScheduler:
         :rtype: float.  The interpolated value.
         """
 
-        eps_threshold =  self.a * np.exp(-1. * step / self.EPS_DECAY)
+        if step < 0:
+            value = self.value_from
+        elif step >= self.num_steps - 1:
+            value = self.value_to
+        else:
+            value = self.a * np.exp(self.b * step)
         
-        return eps_threshold
+        return value
 
