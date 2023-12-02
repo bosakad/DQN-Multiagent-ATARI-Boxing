@@ -6,7 +6,7 @@ from Atari_Agents import Atari_Agents
 from pettingzoo.atari import boxing_v2
 import EnvPreprocess
 import os
-os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
+# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
 # SEED = 0
 SEED = 14

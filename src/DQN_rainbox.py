@@ -5,8 +5,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from NoisyLinear import NoisyLinear
 
-# TODO: redo the network such that the agents share the convolutional layers, but have seperate FF layers:) 
-
 class Network(nn.Module):
     def __init__(
         self, 
