@@ -36,8 +36,8 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
     
     ############################################### parameters ###############################################
     
-    num_frames = 1000
-    memory_size = 2000
+    num_frames = 40_000
+    memory_size = 10_000
     batch_size = 16
     target_update = 100
     gamma = 0.92
@@ -102,7 +102,7 @@ def test_boxing(PATH, architectureTypes, randomization): # test boxing using sav
     seed_torch(SEED)
     
     agents = Atari_Agents(env, 300, 32, 20, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureTypes, randomization=randomization)
+                          atom_size=atom_size, archTypes=architectureTypes, randomization=randomization)
     
     agents.load(PATH) # load the models
     agents.test(env)
@@ -113,9 +113,9 @@ def test_boxing(PATH, architectureTypes, randomization): # test boxing using sav
 if __name__ == "__main__":
 
     # Comparison 1: replay buffer prefilling
-    train_boxing(init_buffer_fill = {"first_0": 1000, "second_0": 0},  # initial buffer fill for each agent
-                 architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
-                 randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
+    # train_boxing(init_buffer_fill = {"first_0": 10_000, "second_0": 0},  # initial buffer fill for each agent
+    #              architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
+    #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     # Comparison 2: Feature Extraction Enhancement
     # train_boxing(init_buffer_fill = {"first_0": 1000, "second_0": 1000},  # initial buffer fill for each agent
@@ -128,7 +128,9 @@ if __name__ == "__main__":
     #              architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
     #              randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
 
-    # test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
+    test_boxing("../results/models/1_VS_1/small_small_BF1-5000_BF2-0.pt", 
+                architectureTypes = {"first_0": "small", "second_0": "small"},
+                randomization = {"first_0": "noisy", "second_0": "noisy"})
     # test_boxing("../results/models/1_VS_RANDOM/big.pt")
 
 
