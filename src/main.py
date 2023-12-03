@@ -49,7 +49,7 @@ def train_boxing():
     # define the architecture types
     # architectureType = "xtra-small"
     # architectureType = "small"
-    architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
+    architectureTypes = {"first_0": "xtra-small", "second_0": "alexnet"} # different architectures for different agents
 
     # define path to save models
     PATH = "../results/models/1_VS_1/" + architectureTypes["first_0"] + "_"\

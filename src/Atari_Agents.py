@@ -168,12 +168,6 @@ class Atari_Agents:
         
         if not self.is_test:
             
-            # beginning - force the agent to go into each other
-            if self.frames_cur_episode <= 20 and self.episode_num <= 3: 
-                if self.frames_cur_episode % 2 == 0:
-                    selected_action[0] = 5 # move down
-                    selected_action[1] = 2 # move up
-
             # select random action for both agents
             if random: 
                 for i, agent in enumerate(self.env.agents):
