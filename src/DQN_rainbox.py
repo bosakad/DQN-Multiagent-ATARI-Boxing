@@ -62,11 +62,8 @@ class Network(nn.Module):
                                                )
             self.convOutputSize = 3072 # remember to change if changes to the CNN is made 
 
-        print("Conv output size: ", self.convOutputSize)
-
         if randomization == "noisy":
 
-            print("Using noisy layers")
             # set advantage layer
             self.advantage_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize) 
             self.advantage_layer = NoisyLinear(self.convOutputSize, out_dim * atom_size)
@@ -76,7 +73,6 @@ class Network(nn.Module):
             self.value_layer = NoisyLinear(self.convOutputSize, atom_size)
 
         elif randomization == "eps": # based on epsilon scheduler and duelling networks
-            print("Using eps-greedy")
 
             # set advantage layer
             self.advantage_hidden_layer = nn.Linear(self.convOutputSize, self.convOutputSize) 

@@ -55,8 +55,8 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
                                     + architectureTypes["second_0"] + "_BF1-" +\
                                     str(init_buffer_fill["first_0"]) + "_BF2-" + str(init_buffer_fill["second_0"])
     FIG_PATH = f"../results/figures/1v1_" + architectureTypes["first_0"] + "_"\
-                                            + architectureTypes["second_0"] + "_BF1_" +\
-                            str(init_buffer_fill["first_0"]) + "BF2_" + str(init_buffer_fill["second_0"]) + ".pdf"
+                                            + architectureTypes["second_0"] + "_BF1-" +\
+                            str(init_buffer_fill["first_0"]) + "BF2-" + str(init_buffer_fill["second_0"]) + ".pdf"
     
 
     ############################################### training ###############################################
@@ -85,15 +85,10 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
     env.close()
 
 
-def test_boxing(PATH): # test boxing using saved models
+def test_boxing(PATH, architectureTypes, randomization): # test boxing using saved models
 
     env = boxing_v2.parallel_env(render_mode="human")
     env = EnvPreprocess.preprocess_boxing(env, training=False)
-
-    # parameters - dont matter
-    memory_size = 300
-    batch_size = 32
-    target_update = 20
 
     # define a suppport - might have to increase number of atoms
     # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
@@ -105,37 +100,33 @@ def test_boxing(PATH): # test boxing using saved models
     np.random.seed(SEED)
     random.seed(SEED)
     seed_torch(SEED)
-
-    # define the architecture type - this has to match the architecture type of the model
-    architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
-    randomization = {"first_0": "noisy", "second_0": "eps"} # select the type of randomization for each agent
     
-    agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
+    agents = Atari_Agents(env, 300, 32, 20, SEED, v_min=v_min, v_max=v_max,
                           atom_size=atom_size, archType=architectureTypes, randomization=randomization)
     
     agents.load(PATH) # load the models
     agents.test(env)
 
-
+    # close the env
     env.close()
 
 if __name__ == "__main__":
 
     # Comparison 1: replay buffer prefilling
-    train_boxing(init_buffer_fill = {"first_0": 100, "second_0": 30},  # initial buffer fill for each agent
-                 architectureTypes = {"first_0": "xtra-small", "second_0": "small"}, # different architectures for different agents
-                 randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
+    train_boxing(init_buffer_fill = {"first_0": 1000, "second_0": 0},  # initial buffer fill for each agent
+                 architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
+                 randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     # Comparison 2: Feature Extraction Enhancement
-    # train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},  # initial buffer fill for each agent
-    #              architectureTypes = {"first_0": "big", "second_0": "alexnet"}, # different architectures for different agents
+    # train_boxing(init_buffer_fill = {"first_0": 1000, "second_0": 1000},  # initial buffer fill for each agent
+    #              architectureTypes = {"first_0": "xtra-small", "second_0": "big"}, # different architectures for different agents
     #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     
     # Comparison 3: Stochastic Elements
-    # train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},  # initial buffer fill for each agent
-    #              architectureTypes = {"first_0": "big", "second_0": "alexnet"}, # different architectures for different agents
-    #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
+    # train_boxing(init_buffer_fill = {"first_0": 1000, "second_0": 1000},  # initial buffer fill for each agent
+    #              architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
+    #              randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
 
     # test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
     # test_boxing("../results/models/1_VS_RANDOM/big.pt")

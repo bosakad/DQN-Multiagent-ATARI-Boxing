@@ -182,7 +182,6 @@ class Atari_Agents:
                 if self.randomization[agent] == "eps":  # epsilon-greedy selection
 
                     eps = self.eps[agent].value(frame_idx)
-                    print("eps: ", eps)
 
                     if np.random.rand() > eps or self.is_test: # greedy if testing or rand > eps    
                         selected_action[i] = self.dqn[i](state).argmax()
@@ -369,9 +368,6 @@ class Atari_Agents:
                 model_name = f'{100 * (frame_idx - 1) / num_frames:04.1f}'.replace('.', '_')
                 self.saved_models["dqn1_" + model_name] = copy.deepcopy(self.dqn[0].state_dict())
                 self.saved_models["dqn2_" + model_name] = copy.deepcopy(self.dqn[1].state_dict())
-
-            print("MEMORY SIZE1: ", len(self.memory[0]))
-            print("MEMORY SIZE2: ", len(self.memory[1]))
 
 
         # plotting the result
