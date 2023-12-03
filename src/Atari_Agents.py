@@ -179,17 +179,16 @@ class Atari_Agents:
             for i, agent in enumerate(self.env.agents):  
                 
                 # select action based on randomization type
-                if self.randomization[agent] == "eps":
+                if self.randomization[agent] == "eps":  # epsilon-greedy selection
 
-                    # epsilon-greedy selection
                     eps = self.eps[agent].value(frame_idx)
-                    print("epsilon value: ", eps)
+                    print("eps: ", eps)
 
-                    if np.random.rand() > eps: # greedy
+                    if np.random.rand() > eps or self.is_test: # greedy if testing or rand > eps    
                         selected_action[i] = self.dqn[i](state).argmax()
                         selected_action[i] = selected_action[i].detach().cpu().numpy()
                     else: # random
-                        self.env.action_space(agent).sample() 
+                        selected_action[i] = self.env.action_space(agent).sample() 
                     
                 elif self.randomization[agent] == "noisy": # noisy layers - take argmax
                     selected_action[i] = self.dqn[i](state).argmax()
@@ -381,7 +380,7 @@ class Atari_Agents:
 
         # save the models
         self.saved_models["dqn1_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
-        self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
+        self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[1].state_dict())
         torch.save(self.saved_models, self.PATH + ".pt")
 
     def load_params(self, PATH):
