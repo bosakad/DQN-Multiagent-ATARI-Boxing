@@ -35,10 +35,10 @@ def train_boxing():
     ############################################### parameters ###############################################
     
     num_frames = 1000
-    memory_size = 1000
+    memory_size = 2000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = {"first_0": 1000, "second_0": 0} # fill the buffer with closeup-random actions
+    init_buffer_fill = {"first_0": 0, "second_0": 0} # fill the buffer with closeup-random actions
     gamma = 0.92
 
     # define a suppport - might have to increase number of atoms
@@ -48,11 +48,12 @@ def train_boxing():
 
     # define the architecture types
     architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
+    randomization = {"first_0": "noisy", "second_0": "eps"}
 
     # define path to save models
     PATH = "../results/models/1_VS_1/" + architectureTypes["first_0"] + "_"\
-                                    + architectureTypes["second_0"] + "_BF1_" +\
-                                    str(init_buffer_fill["first_0"]) + "BF2_" + str(init_buffer_fill["second_0"])
+                                    + architectureTypes["second_0"] + "_BF1-" +\
+                                    str(init_buffer_fill["first_0"]) + "_BF2-" + str(init_buffer_fill["second_0"])
     FIG_PATH = f"../results/figures/1v1_" + architectureTypes["first_0"] + "_"\
                                             + architectureTypes["second_0"] + "_BF1_" +\
                             str(init_buffer_fill["first_0"]) + "BF2_" + str(init_buffer_fill["second_0"]) + ".pdf"
@@ -61,7 +62,8 @@ def train_boxing():
     ############################################### training ###############################################
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archTypes=architectureTypes, gamma=gamma, PATH=PATH, fig_path=FIG_PATH)
+                          atom_size=atom_size, archTypes=architectureTypes, gamma=gamma, 
+                          PATH=PATH, fig_path=FIG_PATH, randomization=randomization, num_frames_train=num_frames)
     
     # uncomment next line to load pretrained models
     # agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
@@ -108,10 +110,10 @@ def test_boxing(PATH): # test boxing using saved models
     # architectureType = "xtra-small"
     # architectureType = "small"
     architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
-
+    randomization = {"first_0": "noisy", "second_0": "eps"} # select the type of randomization for each agent
     
     agents = Atari_Agents(env, memory_size, batch_size, target_update, SEED, v_min=v_min, v_max=v_max,
-                          atom_size=atom_size, archType=architectureTypes)
+                          atom_size=atom_size, archType=architectureTypes, randomization=randomization)
     
     agents.load(PATH) # load the models
     agents.test(env)

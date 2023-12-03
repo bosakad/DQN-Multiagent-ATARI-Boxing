@@ -1,12 +1,9 @@
-import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from IPython.display import clear_output
 from torch.nn.utils import clip_grad_norm_
 import matplotlib.pyplot as plt
 import seaborn as sns
-from collections import deque
-from typing import Deque, Dict, List, Tuple
+from typing import Dict, List
 
 import gymnasium as gym
 import numpy as np
@@ -17,6 +14,7 @@ import copy
 from ReplayBuffer import ReplayBuffer
 from PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from DQN_rainbox import Network
+from EpsilonScheduler import EpsilonScheduler
 
 sns.set()
 
@@ -51,7 +49,10 @@ class Atari_Agents:
         archTypes = {"first_0": "xtra-small", "second_0": "small"}, # small or big type of architecture
         PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt
         fig_path = "../results/figures",
-        n_saves = 5
+        n_saves = 5,
+        randomization={"first_0": "noisy", "second_0": "eps"},  # randomization type for each agent
+        num_frames_train=1000 # number of frames to train (needed for eps scheduler)
+
     ):
         """Initialization.
         
@@ -73,6 +74,8 @@ class Atari_Agents:
             PATH (str): path to save the models
             fig_path (str): path to save the figures
             n_saves (int): number of saves
+            randomization ({str}): randomization type for each agent
+            num_frames_train (int): number of frames to train (needed for eps scheduler)
         """
         obsShapeOrig = env.observation_space("first_0").shape
         obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
@@ -83,6 +86,7 @@ class Atari_Agents:
         self.fig_path = fig_path
         self.n_saves = n_saves
         self.saved_models = {}
+        self.randomization = randomization
 
         self.env = env
         self.batch_size = batch_size
@@ -100,6 +104,12 @@ class Atari_Agents:
         # define agent names
         self.A1 = "first_0"
         self.A2 = "second_0"
+
+        # create eps schedulers
+        self.eps = {}
+        for i, agent in enumerate([self.A1, self.A2]):
+            if self.randomization[agent] == "eps":
+                self.eps[agent] = EpsilonScheduler(1.0, 0.01, round((2/3) * num_frames_train))
 
         # PER
         # memory for 1-step Learning
@@ -125,10 +135,14 @@ class Atari_Agents:
                         torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device)]
 
         # networks: dqn, dqn_target for each agent
-        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archTypes[self.A1]).to(self.device),
-                    Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archTypes[self.A2]).to(self.device)]
-        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archTypes[self.A1]).to(self.device),
-                           Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archTypes[self.A2]).to(self.device)]
+        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0],
+                            architectureType=archTypes[self.A1], randomization=randomization[self.A1]).to(self.device),
+                    Network(obs_dim, action_dim, self.atom_size, self.support[1], 
+                            architectureType=archTypes[self.A2], randomization=randomization[self.A2]).to(self.device)]
+        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], 
+                                   architectureType=archTypes[self.A1], randomization=randomization[self.A1]).to(self.device),
+                           Network(obs_dim, action_dim, self.atom_size, self.support[1], 
+                                   architectureType=archTypes[self.A2], randomization=randomization[self.A2]).to(self.device)]
         
         for i, net in enumerate(self.dqn_target):
             net.load_state_dict(self.dqn[i].state_dict())
@@ -148,7 +162,7 @@ class Atari_Agents:
         self.frames_cur_episode = 0
         self.episode_num = 0
     
-    def select_action(self, state: np.ndarray, random=False, 
+    def select_action(self, state: np.ndarray, frame_idx=0, random=False, 
                         save_flag={"first_0": True, "second_0": True}):
         """Select an action from the input state."""
         
@@ -162,11 +176,26 @@ class Atari_Agents:
 
         # select action based on the Q - TODO: eps greedy
         if not random:
-            for i in range(self.agents):  
-                selected_action[i] = self.dqn[i](state).argmax()
-                selected_action[i] = selected_action[i].detach().cpu().numpy()
-        
-        
+            for i, agent in enumerate(self.env.agents):  
+                
+                # select action based on randomization type
+                if self.randomization[agent] == "eps":
+
+                    # epsilon-greedy selection
+                    eps = self.eps[agent].value(frame_idx)
+                    print("epsilon value: ", eps)
+
+                    if np.random.rand() > eps: # greedy
+                        selected_action[i] = self.dqn[i](state).argmax()
+                        selected_action[i] = selected_action[i].detach().cpu().numpy()
+                    else: # random
+                        self.env.action_space(agent).sample() 
+                    
+                elif self.randomization[agent] == "noisy": # noisy layers - take argmax
+                    selected_action[i] = self.dqn[i](state).argmax()
+                    selected_action[i] = selected_action[i].detach().cpu().numpy()
+
+
         if not self.is_test:
             
             # select random action for both agents
@@ -253,14 +282,16 @@ class Atari_Agents:
         self.memory[agent].update_priorities(indices, new_priorities)
         
         # NoisyNet: reset noise
-        self.dqn[agent].reset_noise()
-        self.dqn_target[agent].reset_noise()
+        if self.randomization[self.env.agents[agent]] == "noisy":
+            self.dqn[agent].reset_noise()
+            self.dqn_target[agent].reset_noise()
 
         return loss.item()
         
     def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill_val={}):
         """Train the agent."""
 
+        # prepare the save times
         t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
 
         self.is_test = False
@@ -280,13 +311,14 @@ class Atari_Agents:
         scores = [[] for _ in range(self.agents)]
         score = [0]*self.agents
 
+        # train for certain number of frames
         for frame_idx in range(1, num_frames + 1):
             
-            actions = self.select_action(state)
-            
+            # select action and step the env - save the transition
+            actions = self.select_action(state, frame_idx=frame_idx)
             next_state, rewards, done = self.step(actions)
-
             state = next_state
+
             for i,agent in enumerate(self.env.agents):
                 score[i] += rewards[agent]
 
@@ -310,9 +342,6 @@ class Atari_Agents:
 
             # if training is ready - update the models
             for i in range(self.agents):
-                
-                # if i == 1: # dont train the second agent, TODO: remove this for both agents to learn    
-                #     continue
 
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
@@ -335,22 +364,24 @@ class Atari_Agents:
                             print("frame: ", frame_idx)
  
             self.frames_cur_episode += 1
-
+    
             # save the model certain times
             if frame_idx - 1 in t_saves:
                 model_name = f'{100 * (frame_idx - 1) / num_frames:04.1f}'.replace('.', '_')
                 self.saved_models["dqn1_" + model_name] = copy.deepcopy(self.dqn[0].state_dict())
                 self.saved_models["dqn2_" + model_name] = copy.deepcopy(self.dqn[1].state_dict())
 
+
+
         # plotting the result
-        self._plot(frame_idx, np.array(scores), np.array(losses))
-                
+        self._plot(frame_idx, scores, losses)
+
+        # close the env                
         self.env.close()
 
         # save the models
         self.saved_models["dqn1_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
         self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
-
         torch.save(self.saved_models, self.PATH + ".pt")
 
     def load_params(self, PATH):
@@ -504,10 +535,6 @@ class Atari_Agents:
             if cur_frame % 200 == 0:
                 state = moveToCorners_random(self.env, self.device)
                 
-
-        print(self.memory[0].size)
-        print(self.memory[1].size)
-        exit()
 
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""
