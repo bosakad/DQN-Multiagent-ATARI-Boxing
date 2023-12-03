@@ -370,6 +370,8 @@ class Atari_Agents:
                 self.saved_models["dqn1_" + model_name] = copy.deepcopy(self.dqn[0].state_dict())
                 self.saved_models["dqn2_" + model_name] = copy.deepcopy(self.dqn[1].state_dict())
 
+            print("MEMORY SIZE1: ", len(self.memory[0]))
+            print("MEMORY SIZE2: ", len(self.memory[1]))
 
 
         # plotting the result

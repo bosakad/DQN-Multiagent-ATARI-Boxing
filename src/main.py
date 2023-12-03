@@ -18,7 +18,9 @@ def seed_torch(seed):
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
 
-def train_boxing():
+def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0}, 
+                 architectureTypes = {"first_0": "xtra-small", "second_0": "small"}, 
+                 randomization = {"first_0": "noisy", "second_0": "eps"}):
 
     # environment 
     # env = boxing_v2.parallel_env()
@@ -38,7 +40,6 @@ def train_boxing():
     memory_size = 2000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = {"first_0": 0, "second_0": 0} # fill the buffer with closeup-random actions
     gamma = 0.92
 
     # define a suppport - might have to increase number of atoms
@@ -47,8 +48,7 @@ def train_boxing():
     atom_size = 102
 
     # define the architecture types
-    architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
-    randomization = {"first_0": "noisy", "second_0": "eps"}
+
 
     # define path to save models
     PATH = "../results/models/1_VS_1/" + architectureTypes["first_0"] + "_"\
@@ -107,8 +107,6 @@ def test_boxing(PATH): # test boxing using saved models
     seed_torch(SEED)
 
     # define the architecture type - this has to match the architecture type of the model
-    # architectureType = "xtra-small"
-    # architectureType = "small"
     architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
     randomization = {"first_0": "noisy", "second_0": "eps"} # select the type of randomization for each agent
     
@@ -123,7 +121,22 @@ def test_boxing(PATH): # test boxing using saved models
 
 if __name__ == "__main__":
 
-    train_boxing()
+    # Comparison 1: replay buffer prefilling
+    train_boxing(init_buffer_fill = {"first_0": 100, "second_0": 30},  # initial buffer fill for each agent
+                 architectureTypes = {"first_0": "xtra-small", "second_0": "small"}, # different architectures for different agents
+                 randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
+    
+    # Comparison 2: Feature Extraction Enhancement
+    # train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},  # initial buffer fill for each agent
+    #              architectureTypes = {"first_0": "big", "second_0": "alexnet"}, # different architectures for different agents
+    #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
+    
+    
+    # Comparison 3: Stochastic Elements
+    # train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},  # initial buffer fill for each agent
+    #              architectureTypes = {"first_0": "big", "second_0": "alexnet"}, # different architectures for different agents
+    #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
+
     # test_boxing("../results/models/1_VS_NOOP/xtra-small.pt")
     # test_boxing("../results/models/1_VS_RANDOM/big.pt")
 
