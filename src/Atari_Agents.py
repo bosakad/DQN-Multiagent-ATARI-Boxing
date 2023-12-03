@@ -159,31 +159,27 @@ class Atari_Agents:
         # add batch dimension - to be accepted by DQN
         state = state.unsqueeze(0) 
 
-
-        # for i in range(self.agents):  TODO: put this back for both agents to learn
-        #     selected_action[i] = self.dqn[i](state).argmax()
-        #     selected_action[i] = selected_action[i].detach().cpu().numpy()
-
-        # make one agent do random and the other to take actions        
-        selected_action[0] = self.dqn[0](state).argmax()
-        selected_action[0] = selected_action[0].detach().cpu().numpy()
-
-        #  random action for the second agent
-        # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        selected_action[1] = np.array(np.random.choice(np.arange(0, 17)))
+        # select action based on the Q - TODO: eps greedy
+        if not random:
+            for i in range(self.agents):  
+                selected_action[i] = self.dqn[i](state).argmax()
+                selected_action[i] = selected_action[i].detach().cpu().numpy()
         
-        # beginning - force the agent to go into each other
+        
         if not self.is_test:
+            
+            # beginning - force the agent to go into each other
             if self.frames_cur_episode <= 20 and self.episode_num <= 3: 
                 if self.frames_cur_episode % 2 == 0:
                     selected_action[0] = 5 # move down
                     selected_action[1] = 2 # move up
 
-        if random: # select random action for both agents
-            for i, agent in enumerate(self.env.agents):
-                selected_action[i] = np.array(self.env.action_space(agent).sample())    
+            # select random action for both agents
+            if random: 
+                for i, agent in enumerate(self.env.agents):
+                    selected_action[i] = np.array(self.env.action_space(agent).sample())    
 
-        if not self.is_test:
+            # save the transition
             for i in range(self.agents):
                 self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
 
