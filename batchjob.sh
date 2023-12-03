@@ -23,7 +23,7 @@ mkdir -p "logs/"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now 
 #BSUB -W 2:00
 ### -- request 5GB of system-memory --
-#BSUB -R "rusage[mem=8GB]"
+#BSUB -R "rusage[mem=12GB]"
 ### -- set the email address --
 ##BSUB -u s194324@student.dtu.dk
 ### -- send notification at start --
