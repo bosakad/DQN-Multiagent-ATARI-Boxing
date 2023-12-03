@@ -148,7 +148,8 @@ class Atari_Agents:
         self.frames_cur_episode = 0
         self.episode_num = 0
     
-    def select_action(self, state: np.ndarray, random=False) -> np.ndarray:
+    def select_action(self, state: np.ndarray, random=False, 
+                        save_flag={"first_0": True, "second_0": True}):
         """Select an action from the input state."""
         
         # NoisyNet: no epsilon greedy action selection
@@ -174,13 +175,14 @@ class Atari_Agents:
                     selected_action[i] = np.array(self.env.action_space(agent).sample())    
 
             # save the transition
-            for i in range(self.agents):
-                self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
+            for i, agent in enumerate(self.env.agents):
+                if save_flag[agent]:
+                    self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
 
         return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
         
 
-    def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.float64, bool]:
+    def step(self, actions: np.ndarray, save_flag={"first_0": True, "second_0": True}):
         """Take an action and return the response of the env."""
         
         observations, rewards, terminations, truncations, _ = self.env.step(actions)
@@ -192,6 +194,11 @@ class Atari_Agents:
         if not self.is_test:
             
             for i,agent in enumerate(self.env.agents):
+
+                # dont save if should not
+                if not save_flag[agent]:
+                    continue
+
                 self.transition[i] += [rewards[agent], next_state.detach().cpu().numpy(), done]
 
                 # N-step transition
@@ -201,6 +208,7 @@ class Atari_Agents:
                 # one step transition
                 else:
                     one_step_transition = self.transition[i]
+
                 if one_step_transition:
                     self.memory[i].store(*one_step_transition)
                 
@@ -250,16 +258,16 @@ class Atari_Agents:
 
         return loss.item()
         
-    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill={}):
+    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill_val={}):
         """Train the agent."""
 
         t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
 
         self.is_test = False
 
-        # fill the replay buffer with some experiences - TODO: change to two
-        if init_buffer_fill[self.A1] > 0:
-            self.fill_replay_buffer(init_buffer_fill[self.A1])
+        # fill the replay buffer with some experiences
+        if init_buffer_fill_val[self.A1] > 0 or init_buffer_fill_val[self.A2] > 0:
+            self.fill_replay_buffer(init_buffer_fill_val)
 
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
@@ -450,7 +458,7 @@ class Atari_Agents:
         return elementwise_loss
 
 
-    def fill_replay_buffer(self, num_frames: int):
+    def fill_replay_buffer(self, num_frames_save: {}):
         """Fill replay buffer with experiences."""
 
         # move the players in the corners F - these are places where they easily meet and get a lot rewards
@@ -461,19 +469,30 @@ class Atari_Agents:
                 observations, _, _, _, _ = env.step(actions)
             return utils.getState(observations, device) # return the last state
         
-        def switchSides(env, side):
-            pass # TODO
 
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
         state = utils.getState(observations, self.device)
 
-        # fill the buffer with random actions
-        for frame in range(0, num_frames + 1):
+        # prepare total number of frames
+        num_frames_total = max(num_frames_save[self.A1], num_frames_save[self.A2]) + 2
+
+        # prepare the save_flag
+        save_flag = {self.A1: False, self.A2: False}
+
+        # fill the buffer with random actions        
+        for cur_frame in range(0, num_frames_total):
+
+            # check if transition should be saved or not
+            for agent in self.env.agents:
+                if cur_frame <= num_frames_save[agent] + 1:
+                    save_flag[agent] = True
+                else:
+                    save_flag[agent] = False
 
             # select a random actions and step the env (saves the transition in the memory)
-            actions = self.select_action(state, random=True)
-            next_state, rewards, done = self.step(actions)
+            actions = self.select_action(state, random=True, save_flag=save_flag)
+            next_state, _, done = self.step(actions, save_flag=save_flag)
             state = next_state
 
             # if episode ends - restart the env
@@ -482,12 +501,13 @@ class Atari_Agents:
                 state = utils.getState(observations, self.device) # get state from the observations
             
             # move the players in the corners from time to time
-            if frame % 50 == 0:
+            if cur_frame % 50 == 0:
                 state = moveToCorners_random(self.env, self.device)
                 
 
-        # print(self.memory[0].size)
-        # exit()
+        print(self.memory[0].size)
+        print(self.memory[1].size)
+        exit()
 
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""

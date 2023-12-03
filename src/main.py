@@ -38,7 +38,7 @@ def train_boxing():
     memory_size = 1000
     batch_size = 16
     target_update = 100
-    init_buffer_fill = {"first_0": 0, "second_0": 0} # fill the buffer with closeup-random actions
+    init_buffer_fill = {"first_0": 1000, "second_0": 0} # fill the buffer with closeup-random actions
     gamma = 0.92
 
     # define a suppport - might have to increase number of atoms
@@ -47,9 +47,7 @@ def train_boxing():
     atom_size = 102
 
     # define the architecture types
-    # architectureType = "xtra-small"
-    # architectureType = "small"
-    architectureTypes = {"first_0": "xtra-small", "second_0": "alexnet"} # different architectures for different agents
+    architectureTypes = {"first_0": "xtra-small", "second_0": "small"} # different architectures for different agents
 
     # define path to save models
     PATH = "../results/models/1_VS_1/" + architectureTypes["first_0"] + "_"\
@@ -69,7 +67,7 @@ def train_boxing():
     # agents.load_params("../results/models/1_VS_RANDOM/" + architectureType + "_finetuned2"+ ".pt")
 
     # train the agent
-    agents.train(num_frames, init_buffer_fill=init_buffer_fill)
+    agents.train(num_frames, init_buffer_fill_val=init_buffer_fill)
 
 
     ############################################### testing ###############################################
