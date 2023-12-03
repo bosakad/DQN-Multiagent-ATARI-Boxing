@@ -42,7 +42,7 @@ class Atari_Agents:
         v_max: float = 200.0,
         atom_size: int = 51,
         # N-step Learning
-        n_step: int = 3,
+        n_step: int = 1,
         # add number of agents 
         n_agents = 2,
         TAU = 0.05, # convex combination of copying
@@ -195,6 +195,12 @@ class Atari_Agents:
 
 
         if not self.is_test:
+
+            # force them against each other at the beginning of the training
+            if self.frames_cur_episode <= 20 and self.episode_num <= 3: 
+                if self.frames_cur_episode % 2 == 0:
+                    selected_action[0] = 5 # move down
+                    selected_action[1] = 2 # move up
             
             # select random action for both agents
             if random: 
@@ -493,7 +499,7 @@ class Atari_Agents:
         def moveToCorners_random(env, device):
             action = np.random.choice([6, 7, 8, 9]) # random corner
             actions = {"first_0": action, "second_0": action}
-            for _ in range(50):
+            for _ in range(20):
                 observations, _, _, _, _ = env.step(actions)
             return utils.getState(observations, device) # return the last state
         
@@ -528,9 +534,9 @@ class Atari_Agents:
                 observations, _ = self.env.reset(seed=self.seed)
                 state = utils.getState(observations, self.device) # get state from the observations
             
-            # move the players in the corners from time to time
-            if cur_frame % 200 == 0:
-                state = moveToCorners_random(self.env, self.device)
+            # move the players in the corners from time to time - experiment
+            # if cur_frame % 200 == 0:
+            #     state = moveToCorners_random(self.env, self.device)
                 
 
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
