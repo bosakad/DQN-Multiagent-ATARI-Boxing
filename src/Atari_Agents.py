@@ -465,7 +465,7 @@ class Atari_Agents:
         def moveToCorners_random(env, device):
             action = np.random.choice([6, 7, 8, 9]) # random corner
             actions = {"first_0": action, "second_0": action}
-            for _ in range(10):
+            for _ in range(50):
                 observations, _, _, _, _ = env.step(actions)
             return utils.getState(observations, device) # return the last state
         
@@ -501,7 +501,7 @@ class Atari_Agents:
                 state = utils.getState(observations, self.device) # get state from the observations
             
             # move the players in the corners from time to time
-            if cur_frame % 50 == 0:
+            if cur_frame % 200 == 0:
                 state = moveToCorners_random(self.env, self.device)
                 
 

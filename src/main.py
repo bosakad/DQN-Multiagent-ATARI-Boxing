@@ -9,7 +9,7 @@ import os
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
 # SEED = 0
-SEED = 14
+SEED = 15
 
 def seed_torch(seed):
     torch.manual_seed(seed)
