@@ -32,13 +32,6 @@ class Network(nn.Module):
         
             self.convOutputSize = 800 # change this if you change the convs above
 
-        if architectureType == "xtra-small_v2":
-
-            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
-                                nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
-        
-            self.convOutputSize = 640 # change this if you change the convs above
-
         elif architectureType == "small":
 
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 6, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
@@ -46,7 +39,7 @@ class Network(nn.Module):
         
             self.convOutputSize = 1600 # change this if you change the convs above
 
-        elif architectureType == "big": # architecture is large
+        elif architectureType == "big": # architecture is large (BUG: too big for 28x28 images)
             
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 9, stride=4, padding=0), nn.ReLU(),
                                                nn.Conv2d(32, 64, 5, stride=3, padding=0), nn.ReLU(),
@@ -55,7 +48,7 @@ class Network(nn.Module):
             
             self.convOutputSize = 6912  
         
-        elif architectureType == "alexnet": # the AlexNet (ish) architecture 
+        elif architectureType == "alexnet": # the AlexNet (ish) architecture (BUG: too big for 28x28 images)
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, kernel_size=9, stride=2, padding=0), nn.ReLU(),
                                                nn.MaxPool2d(kernel_size=3, stride=2), 
                                                nn.BatchNorm2d(32),
