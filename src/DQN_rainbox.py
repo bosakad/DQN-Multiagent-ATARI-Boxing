@@ -41,10 +41,10 @@ class Network(nn.Module):
 
         elif architectureType == "small":
 
-            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 5, stride=5, padding=0), nn.ReLU(), # nn.BatchNorm2d(32),
-                                nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU())                         #, nn.BatchNorm2d(64))
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 6, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+                                nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64))
         
-            self.convOutputSize = 1280 # change this if you change the convs above
+            self.convOutputSize = 1600 # change this if you change the convs above
 
         elif architectureType == "big": # architecture is large
             

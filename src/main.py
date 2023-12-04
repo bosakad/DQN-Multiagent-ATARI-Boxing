@@ -118,15 +118,15 @@ if __name__ == "__main__":
     #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     # Comparison 2: Feature Extraction Enhancement
-    # train_boxing(init_buffer_fill = {"first_0": 10_000, "second_0": 10_000},  # initial buffer fill for each agent
-    #              architectureTypes = {"first_0": "xtra-small", "second_0": "big"}, # different architectures for different agents
-    #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
+    train_boxing(init_buffer_fill = {"first_0": 16, "second_0": 16},  # initial buffer fill for each agent
+                 architectureTypes = {"first_0": "xtra-small", "second_0": "small"}, # different architectures for different agents
+                 randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     
     # Comparison 3: Stochastic Elements
-    train_boxing(init_buffer_fill = {"first_0": 1600, "second_0": 1600},  # initial buffer fill for each agent
-                 architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
-                 randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
+    # train_boxing(init_buffer_fill = {"first_0": 1600, "second_0": 1600},  # initial buffer fill for each agent
+    #              architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
+    #              randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
 
     # test_boxing("../results/models/1_VS_1/xtra-small_xtra-small_BF1-1600_BF2-1600.pt", 
     #             architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"},
