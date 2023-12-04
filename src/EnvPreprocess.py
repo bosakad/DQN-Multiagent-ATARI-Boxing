@@ -13,10 +13,6 @@ def preprocess_boxing(env, width = 112, height = 147, training=True):
     NOTE: Final observation space: (height, width, 4 = number of frames stacked)
     """
 
-    # try out other width and height
-    width = 80
-    height = 98
-
     with warnings.catch_warnings(): # ignore rendering warnings
         warnings.simplefilter("ignore")
 
@@ -34,7 +30,7 @@ def preprocess_boxing(env, width = 112, height = 147, training=True):
         env = supersuit.resize_v1(env, int(width), int(height))
 
         # skip frames for faster processing and less control
-        env = supersuit.frame_skip_v0(env, 3)
+        env = supersuit.frame_skip_v0(env, 7)
 
         # allow agent to see everything on the screen despite Atari's flickering screen problem
         env = supersuit.frame_stack_v1(env, 4)  
