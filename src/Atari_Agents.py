@@ -193,6 +193,8 @@ class Atari_Agents:
                     selected_action[i] = self.dqn[i](state).argmax()
                     selected_action[i] = selected_action[i].detach().cpu().numpy()
 
+        # TODO: remove after trying to replicate the noop results
+        selected_action[1] = np.array(0)
 
         if not self.is_test:
 
@@ -360,15 +362,15 @@ class Atari_Agents:
                     update_cnt[i] += 1
                     
                     # update each iteration - TODO: experiment
-                    # target_net_state_dict = self.dqn[i].state_dict()
-                    # policy_net_state_dict = self.dqn_target[i].state_dict()
-                    # for key in policy_net_state_dict:
-                    #     target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
-                    # self.dqn_target[i].load_state_dict(target_net_state_dict)
+                    target_net_state_dict = self.dqn[i].state_dict()
+                    policy_net_state_dict = self.dqn_target[i].state_dict()
+                    for key in policy_net_state_dict:
+                        target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
+                    self.dqn_target[i].load_state_dict(target_net_state_dict)
 
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        self._target_hard_update(i) # TODO: experiment with soft update
+                        # self._target_hard_update(i) # TODO: experiment with soft update
 
                         # print out the frame progress from time to time
                         if i == 0:
