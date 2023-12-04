@@ -15,7 +15,7 @@ mkdir -p "logs/"
 ### –- specify queue --
 # BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J rl_1vRand
+#BSUB -J rl_train
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --

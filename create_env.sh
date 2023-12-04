@@ -14,7 +14,7 @@ source $env_name/bin/activate
 
 python -m pip install --upgrade pip
 python -m pip install torch torchvision torchaudio
-python -m pip install -r requirements2.txt
+python -m pip install -r requirements.txt
 
 
 if [ $( basename $PWD ) = "DQN_Multiagent-ATARI-Boxing" ]
