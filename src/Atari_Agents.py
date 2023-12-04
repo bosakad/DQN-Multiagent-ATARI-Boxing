@@ -193,10 +193,6 @@ class Atari_Agents:
                     selected_action[i] = self.dqn[i](state).argmax()
                     selected_action[i] = selected_action[i].detach().cpu().numpy()
 
-        # TODO: remove after trying to replicate the noop results
-        selected_action[1] = np.random.choice([2, 5, 0]) # up, down, noop
-        # selected_action[1] = np.array(0)
-
         if not self.is_test:
 
             # force them against each other at the beginning of the training

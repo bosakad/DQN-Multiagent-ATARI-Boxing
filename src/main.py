@@ -36,8 +36,8 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
     
     ############################################### parameters ###############################################
     
-    num_frames = 30_000
-    memory_size = 5_000
+    num_frames = 70_000
+    memory_size = 6_000
     batch_size = 64
     target_update = 100
     gamma = 0.99
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     
     
     # Comparison 3: Stochastic Elements
-    train_boxing(init_buffer_fill = {"first_0": 1500, "second_0": 1500},  # initial buffer fill for each agent
+    train_boxing(init_buffer_fill = {"first_0": 1600, "second_0": 1600},  # initial buffer fill for each agent
                  architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
                  randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
 
