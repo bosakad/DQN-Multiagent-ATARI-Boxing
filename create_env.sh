@@ -13,7 +13,7 @@ python3 -m venv $env_name
 source $env_name/bin/activate
 
 python -m pip install --upgrade pip
-python -m pip install torch torchvision torchaudio
+python -m pip install torch
 python -m pip install -r requirements.txt
 
 
