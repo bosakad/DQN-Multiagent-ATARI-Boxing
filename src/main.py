@@ -36,14 +36,14 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
     
     ############################################### parameters ###############################################
     
-    num_frames = 70_000
+    num_frames = 40_000
     memory_size = 12_000
-    batch_size = 8
+    batch_size = 16
     target_update = 100
-    gamma = 0.92
+    gamma = 0.95
 
     # define a suppport - might have to increase number of atoms
-    v_min = -100
+    v_min = 0
     v_max = 100
     atom_size = 102
 
@@ -92,8 +92,8 @@ def test_boxing(PATH, architectureTypes, randomization): # test boxing using sav
 
     # define a suppport - might have to increase number of atoms
     # IMPORTANT: make sure to use the same v_min and v_max as the one used in training
-    v_min = -100 # <-50, 50>; 51 atoms with vs NOOP <-30, 30> with 51 for random
-    v_max = 100
+    v_min = 0 # <-50, 50>; 51 atoms with vs NOOP <-30, 30> with 51 for random
+    v_max = 50
     atom_size = 102
 
         # set seed 
