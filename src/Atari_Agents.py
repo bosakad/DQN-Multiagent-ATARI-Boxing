@@ -223,7 +223,7 @@ class Atari_Agents:
         # discount the negative prices
         for i,agent in enumerate(self.env.agents):
             if rewards[agent] < 0:
-                rewards[agent] = 0.5
+                rewards[agent] = 0.1
             else:
                 rewards[agent] *= 1
 
