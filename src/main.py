@@ -124,13 +124,13 @@ if __name__ == "__main__":
     
     
     # Comparison 3: Stochastic Elements
-    # train_boxing(init_buffer_fill = {"first_0": 1600, "second_0": 1600},  # initial buffer fill for each agent
-    #              architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
-    #              randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
+    train_boxing(init_buffer_fill = {"first_0": 1600, "second_0": 1600},  # initial buffer fill for each agent
+                 architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
+                 randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
 
-    test_boxing("../results/models/1_VS_1/xtra-small_xtra-small_BF1-1600_BF2-1600.pt", 
-                architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"},
-                randomization = {"first_0": "noisy", "second_0": "eps"})
+    # test_boxing("../results/models/1_VS_1/xtra-small_xtra-small_BF1-1600_BF2-1600.pt", 
+    #             architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"},
+    #             randomization = {"first_0": "noisy", "second_0": "eps"})
 
     # test_boxing("../results/models/1_VS_RANDOM/big.pt")
 
