@@ -37,6 +37,7 @@ def preprocess_boxing(env, width = 112, height = 147, training=True):
 
         # reshape the observation space to be compatible with pytorch
         env = supersuit.dtype_v0(env, "float32")
+        env = supersuit.normalize_obs_v0(env, env_min=0, env_max=1)
 
 
     return env

@@ -9,7 +9,7 @@ import os
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # for debugging CUDA code
 
 # SEED = 0
-SEED = 17
+SEED = 12
 
 def seed_torch(seed):
     torch.manual_seed(seed)
@@ -23,8 +23,8 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
                  randomization = {"first_0": "noisy", "second_0": "eps"}):
 
     # environment 
-    env = boxing_v2.parallel_env()
-    # env = boxing_v2.parallel_env(render_mode="human")
+    # env = boxing_v2.parallel_env()
+    env = boxing_v2.parallel_env(render_mode="human")
 
     # preprocess the environment
     env = EnvPreprocess.preprocess_boxing(env)
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     
     
     # Comparison 3: Stochastic Elements
-    train_boxing(init_buffer_fill = {"first_0": 10000, "second_0": 10000},  # initial buffer fill for each agent
+    train_boxing(init_buffer_fill = {"first_0": 1500, "second_0": 1500},  # initial buffer fill for each agent
                  architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
                  randomization = {"first_0": "noisy", "second_0": "eps"}) # select the type of randomization for each agent
 

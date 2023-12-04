@@ -194,7 +194,7 @@ class Atari_Agents:
                     selected_action[i] = selected_action[i].detach().cpu().numpy()
 
         # TODO: remove after trying to replicate the noop results
-        selected_action[1] = np.array(0)
+        selected_action[1] = np.random.choice([2, 5, 0]) # up, down, noop
 
         if not self.is_test:
 
