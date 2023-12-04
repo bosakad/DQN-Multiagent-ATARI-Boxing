@@ -38,9 +38,9 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
     
     num_frames = 30_000
     memory_size = 5_000
-    batch_size = 16
+    batch_size = 64
     target_update = 100
-    gamma = 0.93
+    gamma = 0.99
 
     # define a suppport - might have to increase number of atoms
     v_min = -50
