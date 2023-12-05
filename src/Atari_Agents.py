@@ -572,7 +572,7 @@ class Atari_Agents:
         
         fig, axs = plt.subplots(1,2,figsize=(16,5))
         # score plot
-        axs[0].set_title('Frame %s. Score A1: %s. Score A2: %s' % (frame_idx, np.mean(scores[0][-10:]), np.mean(scores[1][-10:])))
+        axs[0].set_title('Frame %s. Score A1: %s. Score A2: %s' % (frame_idx, np.round(np.mean(scores[0][-10:]),2), np.round(np.mean(scores[1][-10:]),2)))
         axs[0].plot(scores[0], "b", label="A1")
         axs[0].plot(scores[1], "r", label="A2")
         axs[0].set_xlabel("Episode")
