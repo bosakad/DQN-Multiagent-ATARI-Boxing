@@ -10,6 +10,12 @@ Suggested extensions from the rainbow paper:
 * Distributional RL - probably not - would be more parameters and change of network architecture
 * Noisy Nets - maybe
 
+| Comparison               | Final learned models               |  Learning plots              |
+| ---------------------- | ---------------------- | ---------------------- |
+| (4.) Parallax occlusion mapping with Binary search                | ![v1](results/gifs/eps-vs-noisy.gif) |  |
+
+
+
 ## Installation
 ```console
 pip install -r requirements.txt
