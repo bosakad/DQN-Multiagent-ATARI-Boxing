@@ -12,6 +12,10 @@ The following comparisons were inspected:
   3. Stochastic Elements: Introduce noisy layers for one agent to add a level of stochasticity in its decision-making process. Simultaneously, employ an epsilon scheduler for the other agent to control exploration-exploitation trade-offs.
 
 
+| Comparison               | Final learned models               |  Learning plots              |
+| ---------------------- | ---------------------- | ---------------------- |
+| eps vs noisy                | ![v1](results/gifs/eps-vs-noisy.gif) |  |
+
 ## Installation
 ```console
 pip install -r requirements.txt
