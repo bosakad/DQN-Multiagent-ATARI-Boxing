@@ -10,11 +10,13 @@ import numpy as np
 import torch
 import utils
 import copy
+import time
 
 from ReplayBuffer import ReplayBuffer
 from PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from DQN_rainbox import Network
 from EpsilonScheduler import EpsilonScheduler
+
 
 sns.set()
 
@@ -412,6 +414,11 @@ class Atari_Agents:
             if (key.startswith("dqn2")):
                 continue
 
+            # only test the last model (100% trained)
+            # comment the next line to see the models at different stages
+            if not key.endswith("100_0"): 
+                continue
+
             print("Testing: " + key)
             
             self.dqn[0].load_state_dict(params)
@@ -438,6 +445,9 @@ class Atari_Agents:
                 score[0] += reward[self.A1]
                 score[1] += reward[self.A2]
         
+                # stall the program a little
+                time.sleep(0.06)
+
             print("score: ", score)
         
         self.env.close()
