@@ -18,7 +18,7 @@ This project employed deep Q-learning to train two agents in a competitive scena
 
 The agent indicated as *A1* is represented by a white agent, while *A2* is visualized as a black agent in the provided GIFs.
 
-| Comparison               | Final learned models               |  Learning plots              |
+| Comparison               | Final Learned Models               |  Learning Plots              |
 | ---------------------- | ---------------------- | ---------------------- |
 | 1. Feature Extraction Enhancement              | ![v1](results/gifs/small_vs_xtra-small.gif) | <img src="results/figures/xtra-small-small_1600-init_2x-noisy-1.png" width="1200" height="200"> |
 | 2. Stochastic Elements                | ![v1](results/gifs/eps-vs-noisy.gif) | <img src="results/figures/2-xtra-small_1600-init_noisy-eps-1.png" width="1200" height="200">| 
