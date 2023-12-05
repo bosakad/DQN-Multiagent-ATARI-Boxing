@@ -14,7 +14,7 @@ The following comparisons were inspected:
 
 | Comparison               | Final learned models               |  Learning plots              |
 | ---------------------- | ---------------------- | ---------------------- |
-| eps vs noisy                | ![v1](results/gifs/eps-vs-noisy.gif) | ![v2](results/figures/2-xtra-small_1600-init_noisy-eps.pdf) |
+| eps vs noisy                | ![v1](results/gifs/eps-vs-noisy.gif) | ![v2](results/figures/2-xtra-small_1600-init_noisy-eps.png) |
 | eps vs noisy                | ![v1](results/gifs/eps-vs-noisy.gif) |  |
 
 ## Installation
