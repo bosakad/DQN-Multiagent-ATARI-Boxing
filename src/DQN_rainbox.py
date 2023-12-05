@@ -5,8 +5,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from NoisyLinear import NoisyLinear
 
-# TODO: redo the network such that the agents share the convolutional layers, but have seperate FF layers:) 
-
 class Network(nn.Module):
     def __init__(
         self, 
@@ -15,6 +13,7 @@ class Network(nn.Module):
         atom_size: int, 
         support: torch.Tensor,
         architectureType = "small",
+        randomization = "noisy"
     ):
         """Initialization."""
         super(Network, self).__init__()
@@ -27,30 +26,29 @@ class Network(nn.Module):
         historyLen = in_dim[0]
 
         if architectureType == "xtra-small":
-
-            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
-                                nn.Conv2d(16, 32, 5, stride=5, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
+            
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 16, 6, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(16),
+                                nn.Conv2d(16, 32, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(32))
         
-            self.convOutputSize = 640 # change this if you change the convs above
+            self.convOutputSize = 800 # change this if you change the convs above
 
         elif architectureType == "small":
 
-            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 5, stride=5, padding=0), nn.ReLU(), # nn.BatchNorm2d(32),
-                                nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU())                         #, nn.BatchNorm2d(64))
+            self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 6, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(32),
+                                nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(), nn.BatchNorm2d(64))
         
-            self.convOutputSize = 1280 # change this if you change the convs above
+            self.convOutputSize = 1600 # change this if you change the convs above
 
-        elif architectureType == "big": # architecture is large
+        elif architectureType == "big": # architecture is large (BUG: too big for 28x28 images)
             
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, 9, stride=4, padding=0), nn.ReLU(),
                                                nn.Conv2d(32, 64, 5, stride=3, padding=0), nn.ReLU(),
                                                nn.Conv2d(64, 128, 3, stride=1, padding=0), nn.ReLU()
                                     )
             
-            self.convOutputSize = 8960 # change this if you change the convs above
-            self.convOutputSize = 1920  # decreased size of the image (width = 80, height = 98)
+            self.convOutputSize = 6912  
         
-        elif architectureType == "alexnet": # the AlexNet (ish) architecture 
+        elif architectureType == "alexnet": # the AlexNet (ish) architecture (BUG: too big for 28x28 images)
             self.feature_layer = nn.Sequential(nn.Conv2d(historyLen, 32, kernel_size=9, stride=2, padding=0), nn.ReLU(),
                                                nn.MaxPool2d(kernel_size=3, stride=2), 
                                                nn.BatchNorm2d(32),
@@ -64,13 +62,25 @@ class Network(nn.Module):
                                                )
             self.convOutputSize = 8960 # remember to change if changes to the CNN is made 
 
-        # set advantage layer
-        self.advantage_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize) 
-        self.advantage_layer = NoisyLinear(self.convOutputSize, out_dim * atom_size)
+        if randomization == "noisy":
 
-        # set value layer
-        self.value_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize)
-        self.value_layer = NoisyLinear(self.convOutputSize, atom_size)
+            # set advantage layer
+            self.advantage_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize) 
+            self.advantage_layer = NoisyLinear(self.convOutputSize, out_dim * atom_size)
+
+            # set value layer
+            self.value_hidden_layer = NoisyLinear(self.convOutputSize, self.convOutputSize)
+            self.value_layer = NoisyLinear(self.convOutputSize, atom_size)
+
+        elif randomization == "eps": # based on epsilon scheduler and duelling networks
+
+            # set advantage layer
+            self.advantage_hidden_layer = nn.Linear(self.convOutputSize, self.convOutputSize) 
+            self.advantage_layer = nn.Linear(self.convOutputSize, out_dim * atom_size)
+
+            # set value layer
+            self.value_hidden_layer = nn.Linear(self.convOutputSize, self.convOutputSize)
+            self.value_layer = nn.Linear(self.convOutputSize, atom_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method implementation."""

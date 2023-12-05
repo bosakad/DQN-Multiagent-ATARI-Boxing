@@ -1,22 +1,22 @@
-import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from IPython.display import clear_output
 from torch.nn.utils import clip_grad_norm_
 import matplotlib.pyplot as plt
 import seaborn as sns
-from collections import deque
-from typing import Deque, Dict, List, Tuple
+from typing import Dict, List
 
 import gymnasium as gym
 import numpy as np
 import torch
 import utils
 import copy
+import time
 
 from ReplayBuffer import ReplayBuffer
 from PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from DQN_rainbox import Network
+from EpsilonScheduler import EpsilonScheduler
+
 
 sns.set()
 
@@ -24,24 +24,7 @@ sns.set()
 class Atari_Agents:
     """DQN Agent interacting with environment.
     
-    Attribute:
-        env (gym.Env): openAI Gym environment
-        memory (PrioritizedReplayBuffer): replay memory to store transitions
-        batch_size (int): batch size for sampling
-        target_update (int): period for target model's hard update
-        gamma (float): discount factor
-        dqn (Network): model to train and select actions
-        dqn_target (Network): target model to update
-        optimizer (torch.optim): optimizer for training dqn
-        transition (list): transition information including 
-                           state, action, reward, next_state, done
-        v_min (float): min value of support
-        v_max (float): max value of support
-        atom_size (int): the unit number of support
-        support (torch.Tensor): support for categorical dqn
-        use_n_step (bool): whether to use n_step memory
-        n_step (int): step number to calculate n-step td error
-        memory_n (ReplayBuffer): n-step replay buffer
+        defines the train and test of agents in the boxing scenario
     """
 
     def __init__(
@@ -61,14 +44,17 @@ class Atari_Agents:
         v_max: float = 200.0,
         atom_size: int = 51,
         # N-step Learning
-        n_step: int = 3,
+        n_step: int = 1,
         # add number of agents 
         n_agents = 2,
         TAU = 0.05, # convex combination of copying
-        archType = "small", # small or big type of architecture
+        archTypes = {"first_0": "xtra-small", "second_0": "small"}, # small or big type of architecture
         PATH="../results/models/dqn", # path with filename, will save as path1.pt and path2.pt
         fig_path = "../results/figures",
-        n_saves = 5
+        n_saves = 5,
+        randomization={"first_0": "noisy", "second_0": "eps"},  # randomization type for each agent
+        num_frames_train=1000 # number of frames to train (needed for eps scheduler)
+
     ):
         """Initialization.
         
@@ -86,6 +72,12 @@ class Atari_Agents:
             v_max (float): max value of support
             atom_size (int): the unit number of support
             n_step (int): step number to calculate n-step td error
+            archTypes ({str}): architecture type of the network
+            PATH (str): path to save the models
+            fig_path (str): path to save the figures
+            n_saves (int): number of saves
+            randomization ({str}): randomization type for each agent
+            num_frames_train (int): number of frames to train (needed for eps scheduler)
         """
         obsShapeOrig = env.observation_space("first_0").shape
         obs_dim = (obsShapeOrig[2], obsShapeOrig[0], obsShapeOrig[1]) # pytorch expects (C,H,W)
@@ -96,21 +88,30 @@ class Atari_Agents:
         self.fig_path = fig_path
         self.n_saves = n_saves
         self.saved_models = {}
+        self.randomization = randomization
 
         self.env = env
         self.batch_size = batch_size
         self.target_update = target_update
         self.seed = seed
         self.gamma = gamma
-        self.agents = n_agents # added #agents 
-        # NoisyNet: All attributes related to epsilon are removed
+        self.agents = n_agents 
         
         # device: cpu / gpu
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         print(self.device)
-        # self.device = "cpu"
+
+        # define agent names
+        self.A1 = "first_0"
+        self.A2 = "second_0"
+
+        # create eps schedulers
+        self.eps = {}
+        for i, agent in enumerate([self.A1, self.A2]):
+            if self.randomization[agent] == "eps":
+                self.eps[agent] = EpsilonScheduler(1.0, 0.01, round((2/3) * num_frames_train))
 
         # PER
         # memory for 1-step Learning
@@ -136,10 +137,14 @@ class Atari_Agents:
                         torch.linspace(self.v_min, self.v_max, self.atom_size).to(self.device)]
 
         # networks: dqn, dqn_target for each agent
-        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archType).to(self.device),
-                    Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archType).to(self.device)]
-        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], architectureType=archType).to(self.device),
-                           Network(obs_dim, action_dim, self.atom_size, self.support[1], architectureType=archType).to(self.device)]
+        self.dqn = [Network(obs_dim, action_dim, self.atom_size, self.support[0],
+                            architectureType=archTypes[self.A1], randomization=randomization[self.A1]).to(self.device),
+                    Network(obs_dim, action_dim, self.atom_size, self.support[1], 
+                            architectureType=archTypes[self.A2], randomization=randomization[self.A2]).to(self.device)]
+        self.dqn_target = [Network(obs_dim, action_dim, self.atom_size, self.support[0], 
+                                   architectureType=archTypes[self.A1], randomization=randomization[self.A1]).to(self.device),
+                           Network(obs_dim, action_dim, self.atom_size, self.support[1], 
+                                   architectureType=archTypes[self.A2], randomization=randomization[self.A2]).to(self.device)]
         
         for i, net in enumerate(self.dqn_target):
             net.load_state_dict(self.dqn[i].state_dict())
@@ -155,14 +160,12 @@ class Atari_Agents:
         # mode: train / test
         self.is_test = False
 
-        # define agent names
-        self.A1 = "first_0"
-        self.A2 = "second_0"
-
+        # information needed for the init buffer fill
         self.frames_cur_episode = 0
         self.episode_num = 0
     
-    def select_action(self, state: np.ndarray, random=False) -> np.ndarray:
+    def select_action(self, state: np.ndarray, frame_idx=0, random=False, 
+                        save_flag={"first_0": True, "second_0": True}):
         """Select an action from the input state."""
         
         # NoisyNet: no epsilon greedy action selection
@@ -173,49 +176,70 @@ class Atari_Agents:
         # add batch dimension - to be accepted by DQN
         state = state.unsqueeze(0) 
 
+        # select action based on the Q - TODO: eps greedy
+        if not random:
+            for i, agent in enumerate(self.env.agents):  
+                
+                # select action based on randomization type
+                if self.randomization[agent] == "eps":  # epsilon-greedy selection
 
-        # for i in range(self.agents):  TODO: put this back for both agents to learn
-        #     selected_action[i] = self.dqn[i](state).argmax()
-        #     selected_action[i] = selected_action[i].detach().cpu().numpy()
+                    eps = self.eps[agent].value(frame_idx)
 
-        # make one agent do random and the other to take actions        
-        selected_action[0] = self.dqn[0](state).argmax()
-        selected_action[0] = selected_action[0].detach().cpu().numpy()
+                    if np.random.rand() > eps or self.is_test: # greedy if testing or rand > eps    
+                        selected_action[i] = self.dqn[i](state).argmax()
+                        selected_action[i] = selected_action[i].detach().cpu().numpy()
+                    else: # random
+                        selected_action[i] = self.env.action_space(agent).sample() 
+                    
+                elif self.randomization[agent] == "noisy": # noisy layers - take argmax
+                    selected_action[i] = self.dqn[i](state).argmax()
+                    selected_action[i] = selected_action[i].detach().cpu().numpy()
 
-        #  random action for the second agent
-        # selected_action[1] = np.array(self.env.action_space(self.A2).sample())
-        selected_action[1] = np.array(np.random.choice(np.arange(0, 17)))
-        
-        # beginning - force the agent to go into each other
         if not self.is_test:
+
+            # force them against each other at the beginning of the training
             if self.frames_cur_episode <= 20 and self.episode_num <= 3: 
                 if self.frames_cur_episode % 2 == 0:
                     selected_action[0] = 5 # move down
                     selected_action[1] = 2 # move up
+            
+            # select random action for both agents
+            if random: 
+                for i, agent in enumerate(self.env.agents):
+                    selected_action[i] = np.array(self.env.action_space(agent).sample())    
 
-        if random: # select random action for both agents
+            # save the transition
             for i, agent in enumerate(self.env.agents):
-                selected_action[i] = np.array(self.env.action_space(agent).sample())    
-
-        if not self.is_test:
-            for i in range(self.agents):
-                self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
+                if save_flag[agent]:
+                    self.transition[i] = [state.detach().cpu().numpy()[0], selected_action[i]]
 
         return {agent: selected_action[i] for i,agent in enumerate(self.env.agents)}
         
 
-    def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.float64, bool]:
+    def step(self, actions: np.ndarray, save_flag={"first_0": True, "second_0": True}):
         """Take an action and return the response of the env."""
         
         observations, rewards, terminations, truncations, _ = self.env.step(actions)
         next_state = utils.getState(observations, self.device) # get state from the observations
         
+        # discount the negative prices
+        for i,agent in enumerate(self.env.agents):
+            if rewards[agent] < 0:
+                rewards[agent] = 0.1
+            else:
+                rewards[agent] *= 1
+
         # done = terminated or truncated
         done = terminations["first_0"] or truncations["first_0"]
 
         if not self.is_test:
             
             for i,agent in enumerate(self.env.agents):
+
+                # dont save if should not
+                if not save_flag[agent]:
+                    continue
+
                 self.transition[i] += [rewards[agent], next_state.detach().cpu().numpy(), done]
 
                 # N-step transition
@@ -225,6 +249,7 @@ class Atari_Agents:
                 # one step transition
                 else:
                     one_step_transition = self.transition[i]
+
                 if one_step_transition:
                     self.memory[i].store(*one_step_transition)
                 
@@ -269,21 +294,23 @@ class Atari_Agents:
         self.memory[agent].update_priorities(indices, new_priorities)
         
         # NoisyNet: reset noise
-        self.dqn[agent].reset_noise()
-        self.dqn_target[agent].reset_noise()
+        if self.randomization[self.env.agents[agent]] == "noisy":
+            self.dqn[agent].reset_noise()
+            self.dqn_target[agent].reset_noise()
 
         return loss.item()
         
-    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill=1000):
+    def train(self, num_frames: int, plotting_interval: int = 200, init_buffer_fill_val={}):
         """Train the agent."""
 
+        # prepare the save times
         t_saves = np.linspace(0, num_frames, self.n_saves - 1, endpoint=False)
 
         self.is_test = False
 
         # fill the replay buffer with some experiences
-        if init_buffer_fill > 0:
-            self.fill_replay_buffer(init_buffer_fill)
+        if init_buffer_fill_val[self.A1] > 0 or init_buffer_fill_val[self.A2] > 0:
+            self.fill_replay_buffer(init_buffer_fill_val)
 
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
@@ -296,13 +323,14 @@ class Atari_Agents:
         scores = [[] for _ in range(self.agents)]
         score = [0]*self.agents
 
+        # train for certain number of frames
         for frame_idx in range(1, num_frames + 1):
             
-            actions = self.select_action(state)
-            
+            # select action and step the env - save the transition
+            actions = self.select_action(state, frame_idx=frame_idx)
             next_state, rewards, done = self.step(actions)
-
             state = next_state
+
             for i,agent in enumerate(self.env.agents):
                 score[i] += rewards[agent]
 
@@ -326,9 +354,6 @@ class Atari_Agents:
 
             # if training is ready - update the models
             for i in range(self.agents):
-                
-                # if i == 1: # dont train the second agent, TODO: remove this for both agents to learn    
-                #     continue
 
                 if len(self.memory[i]) >= self.batch_size: # enough experience
                     loss = self.update_model(agent=i)
@@ -336,37 +361,38 @@ class Atari_Agents:
                     update_cnt[i] += 1
                     
                     # update each iteration - TODO: experiment
-                    # target_net_state_dict = self.dqn[i].state_dict()
-                    # policy_net_state_dict = self.dqn_target[i].state_dict()
-                    # for key in policy_net_state_dict:
-                    #     target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
-                    # self.dqn_target[i].load_state_dict(target_net_state_dict)
+                    target_net_state_dict = self.dqn[i].state_dict()
+                    policy_net_state_dict = self.dqn_target[i].state_dict()
+                    for key in policy_net_state_dict:
+                        target_net_state_dict[key] = policy_net_state_dict[key]*self.tau + target_net_state_dict[key]*(1-self.tau)
+                    self.dqn_target[i].load_state_dict(target_net_state_dict)
 
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        self._target_hard_update(i) # TODO: experiment with soft update
+                        # self._target_hard_update(i) # TODO: experiment with soft update
 
                         # print out the frame progress from time to time
                         if i == 0:
                             print("frame: ", frame_idx)
  
             self.frames_cur_episode += 1
-
+    
             # save the model certain times
             if frame_idx - 1 in t_saves:
                 model_name = f'{100 * (frame_idx - 1) / num_frames:04.1f}'.replace('.', '_')
                 self.saved_models["dqn1_" + model_name] = copy.deepcopy(self.dqn[0].state_dict())
                 self.saved_models["dqn2_" + model_name] = copy.deepcopy(self.dqn[1].state_dict())
 
+
         # plotting the result
-        self._plot(frame_idx, np.array(scores), np.array(losses))
-                
+        self._plot(frame_idx, scores, losses)
+
+        # close the env                
         self.env.close()
 
         # save the models
         self.saved_models["dqn1_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
-        self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[0].state_dict())
-
+        self.saved_models["dqn2_" + "100_0"] = copy.deepcopy(self.dqn[1].state_dict())
         torch.save(self.saved_models, self.PATH + ".pt")
 
     def load_params(self, PATH):
@@ -386,6 +412,11 @@ class Atari_Agents:
 
         for key, params in self.saved_models.items():
             if (key.startswith("dqn2")):
+                continue
+
+            # only test the last model (100% trained)
+            # comment the next line to see the models at different stages
+            if not key.endswith("100_0"): 
                 continue
 
             print("Testing: " + key)
@@ -414,6 +445,9 @@ class Atari_Agents:
                 score[0] += reward[self.A1]
                 score[1] += reward[self.A2]
         
+                # stall the program a little
+                time.sleep(0.06)
+
             print("score: ", score)
         
         self.env.close()
@@ -474,30 +508,41 @@ class Atari_Agents:
         return elementwise_loss
 
 
-    def fill_replay_buffer(self, num_frames: int):
+    def fill_replay_buffer(self, num_frames_save: {}):
         """Fill replay buffer with experiences."""
 
         # move the players in the corners F - these are places where they easily meet and get a lot rewards
         def moveToCorners_random(env, device):
             action = np.random.choice([6, 7, 8, 9]) # random corner
             actions = {"first_0": action, "second_0": action}
-            for _ in range(10):
+            for _ in range(20):
                 observations, _, _, _, _ = env.step(actions)
             return utils.getState(observations, device) # return the last state
         
-        def switchSides(env, side):
-            pass # TODO
 
         # reset the env and get the initial state
         observations, _ = self.env.reset(seed=self.seed)
         state = utils.getState(observations, self.device)
 
-        # fill the buffer with random actions
-        for frame in range(0, num_frames + 1):
+        # prepare total number of frames
+        num_frames_total = max(num_frames_save[self.A1], num_frames_save[self.A2]) + 2
+
+        # prepare the save_flag
+        save_flag = {self.A1: False, self.A2: False}
+
+        # fill the buffer with random actions        
+        for cur_frame in range(0, num_frames_total):
+
+            # check if transition should be saved or not
+            for agent in self.env.agents:
+                if cur_frame <= num_frames_save[agent] + 1:
+                    save_flag[agent] = True
+                else:
+                    save_flag[agent] = False
 
             # select a random actions and step the env (saves the transition in the memory)
-            actions = self.select_action(state, random=True)
-            next_state, rewards, done = self.step(actions)
+            actions = self.select_action(state, random=True, save_flag=save_flag)
+            next_state, _, done = self.step(actions, save_flag=save_flag)
             state = next_state
 
             # if episode ends - restart the env
@@ -505,13 +550,10 @@ class Atari_Agents:
                 observations, _ = self.env.reset(seed=self.seed)
                 state = utils.getState(observations, self.device) # get state from the observations
             
-            # move the players in the corners from time to time
-            if frame % 50 == 0:
-                state = moveToCorners_random(self.env, self.device)
+            # move the players in the corners from time to time - experiment
+            # if cur_frame % 200 == 0:
+            #     state = moveToCorners_random(self.env, self.device)
                 
-
-        # print(self.memory[0].size)
-        # exit()
 
     def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
         """Hard update: target <- local."""

@@ -4,6 +4,11 @@ from EnvPreprocess import preprocess_boxing
 import torch
 import numpy as np
 
+"""
+This is a test script to test out the environment - run to see random agents play
+"""
+
+
 env = boxing_v2.parallel_env(render_mode="human") # remove the render_mode not to render
 
 # preprocess the environment
@@ -37,8 +42,8 @@ while env.agents:
     actions = {agent: env.action_space(agent).sample() for agent in env.agents}
     # actions = {agent: actions[agent] for agent in env.agents} # test out your actions
     
-    if i % 30 == 0:
-        observations = moveToCorners_random(env)
+    # if i % 30 == 0:
+        # observations = moveToCorners_random(env)
 
     observations, rewards, terminations, truncations, _ = env.step(actions)
     # observations, rewards, terminations, truncations, _ = env.step(actionsAttack)
@@ -62,8 +67,8 @@ while env.agents:
         # plt.show()
         # plt.imshow(obs1[:, :, 2], cmap="gray")
         # plt.show()
-    # plt.imshow(obs1[:, :, 3], cmap="gray")
-    # plt.show()
+    plt.imshow(obs1[:, :, 3], cmap="gray")
+    plt.show()
 
 
     i += 1
