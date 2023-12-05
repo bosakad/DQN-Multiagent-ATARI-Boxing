@@ -21,9 +21,9 @@ mkdir -p "logs/"
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now 
-#BSUB -W 2:00
+#BSUB -W 8:00
 ### -- request 5GB of system-memory --
-#BSUB -R "rusage[mem=12GB]"
+#BSUB -R "rusage[mem=5GB]"
 ### -- set the email address --
 ##BSUB -u s194324@student.dtu.dk
 ### -- send notification at start --
@@ -43,4 +43,5 @@ source rl_env/bin/activate
 module load cuda/12.1
 
 # run scripts
-python src/main_rainbow.py
+cd src
+python main.py
