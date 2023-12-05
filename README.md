@@ -6,6 +6,9 @@ This project employed deep Q-learning to train two agents in a competitive scena
   - Environment images were downscaled to grayscale, forming 28x28-pixel representations
   - Observations were constructed by stacking four images together.
 
+### Rewards:
+  - The rewards system was altered to assign a small positive reward for receiving a hit and a substantial positive reward for delivering a hit. This adjustment significantly speeded convergence, as the agents became more actively engaged in the fight.
+
 ### Implemented Comparisons:
 
 1. **Feature Extraction Enhancement**: Assessed the influence on learning and adaptation by increasing the number of features (64 features) extracted using 2 convolutions for one agent (*A2*) while keeping the other agent's (*A1*) number of features after the convolutions at 32.
