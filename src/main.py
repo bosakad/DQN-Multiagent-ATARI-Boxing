@@ -112,10 +112,10 @@ def test_boxing(PATH, architectureTypes, randomization): # test boxing using sav
     env.close()
 
 if __name__ == "__main__":
-
+    
     # Comparison 1: replay buffer prefilling
     # train_boxing(init_buffer_fill = {"first_0": 5000, "second_0": 0},  # initial buffer fill for each agent
-    #              architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"}, # different architectures for different agents
+    #              architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
     #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     # Comparison 2: Feature Extraction Enhancement
