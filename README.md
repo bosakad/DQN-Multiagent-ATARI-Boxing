@@ -20,9 +20,9 @@ The agent indicated as *A1* is represented by a white agent, while *A2* is visua
 
 | Comparison               | Final learned models               |  Learning plots              |
 | ---------------------- | ---------------------- | ---------------------- |
-| 1. Feature Extraction Enhancement              | ![v1](results/gifs/small_vs_xtra-small.gif) | <img src="results/figures/xtra-small-small_1600-init_2x-noisy-1.png" width="2000" height="220"> |
-| 2. Stochastic Elements                | ![v1](results/gifs/eps-vs-noisy.gif) | <img src="results/figures/2-xtra-small_1600-init_noisy-eps-1.png" width="1200" height="220">| 
-| 3. Replay Buffer Prefilling                | ![v1](results/gifs/refill_vs_emptyBuffer.gif) | <img src="results/figures/2-xtra-small_5000A1-0A2_2x-noisy-1.png" width="1200" height="220"> |
+| 1. Feature Extraction Enhancement              | ![v1](results/gifs/small_vs_xtra-small.gif) | <img src="results/figures/xtra-small-small_1600-init_2x-noisy-1.png" width="1200" height="200"> |
+| 2. Stochastic Elements                | ![v1](results/gifs/eps-vs-noisy.gif) | <img src="results/figures/2-xtra-small_1600-init_noisy-eps-1.png" width="1200" height="200">| 
+| 3. Replay Buffer Prefilling                | ![v1](results/gifs/refill_vs_emptyBuffer.gif) | <img src="results/figures/2-xtra-small_5000A1-0A2_2x-noisy-1.png" width="1200" height="200"> |
 
 ## Conclusion
 
