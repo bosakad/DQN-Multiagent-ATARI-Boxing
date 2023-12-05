@@ -139,13 +139,13 @@ if __name__ == "__main__":
     #             randomization = {"first_0": "noisy", "second_0": "eps"})
 
     # test the 2. comparison (Feature Extraction Enhancement)
-    test_boxing("../results/models/1_VS_1/xtra-small-small_1600-init_2x-noisy.pt", 
-                architectureTypes = {"first_0": "xtra-small", "second_0": "small"},
-                randomization = {"first_0": "noisy", "second_0": "noisy"})
+    # test_boxing("../results/models/1_VS_1/xtra-small-small_1600-init_2x-noisy.pt", 
+    #             architectureTypes = {"first_0": "xtra-small", "second_0": "small"},
+    #             randomization = {"first_0": "noisy", "second_0": "noisy"})
 
     # test the 1. comparison (replay buffer prefilling)
-    # test_boxing("../results/models/1_VS_1/2-xtra-small_5000A1-0A2_2x-noisy.pt", 
-    #              architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"},
-    #              randomization = {"first_0": "noisy", "second_0": "noisy"})
+    test_boxing("../results/models/1_VS_1/2-xtra-small_5000A1-0A2_2x-noisy.pt", 
+                 architectureTypes = {"first_0": "xtra-small", "second_0": "xtra-small"},
+                 randomization = {"first_0": "noisy", "second_0": "noisy"})
 
 
