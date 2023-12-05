@@ -14,9 +14,10 @@ The following comparisons were inspected:
 
 | Comparison               | Final learned models               |  Learning plots              |
 | ---------------------- | ---------------------- | ---------------------- |
+| architectures                | ![v1](results/gifs/small_vs_xtra-small.gif) | <img src="results/figures/xtra-small-small_1600-init_2x-noisy-1.png" width="1000" height="220"> |
 | eps vs noisy                | ![v1](results/gifs/eps-vs-noisy.gif) | <img src="results/figures/2-xtra-small_1600-init_noisy-eps-1.png" width="1000" height="220">| 
 | refill                | ![v1](results/gifs/refill_vs_emptyBuffer.gif) | <img src="results/figures/2-xtra-small_5000A1-0A2_2x-noisy-1.png" width="1000" height="220"> |
-| architectures                | ![v1](results/gifs/small_vs_xtra-small.gif) | <img src="results/figures/xtra-small-small_1600-init_2x-noisy-1.png" width="1000" height="220"> |
+
 
 
 ## Installation
