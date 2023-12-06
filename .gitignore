@@ -1,5 +1,22 @@
+# training outputs 
+results/models/*
+logs/*
+
+# roms 
 ROMS/*
+
+# teo's stuff
+messynotebook.ipynb
+rl_env
+
+# HPC stuff 
+batchjob.sh
+create_env.sh
+
+# adam's stuff
 activate.sh
+
+# pycache 
 src/__pycache__/__init__.cpython-38.pyc
 src/__pycache__/EpsilonScheduler.cpython-38.pyc
 tests/__pycache__/__init__.cpython-38.pyc
@@ -9,3 +26,20 @@ src/__pycache__/EpsilonScheduler.cpython-311.pyc
 tests/__pycache__/__init__.cpython-311.pyc
 tests/__pycache__/test_EpsilonScheduler.cpython-311.pyc
 src/__pycache__/EnvPreprocess.cpython-38.pyc
+src/__pycache__/DQN_rainbox.cpython-311.pyc
+src/__pycache__/NoisyLinear.cpython-311.pyc
+src/__pycache__/PrioritizedReplayBuffer.cpython-311.pyc
+src/__pycache__/ReplayBuffer.cpython-311.pyc
+src/__pycache__/segment_tree.cpython-311.pyc
+src/videos/rainbow/rl-video-episode-0.meta.json
+src/__pycache__/Atari_Agents.cpython-311.pyc
+src/__pycache__/Atari_Agents.cpython-38.pyc
+src/__pycache__/DQN_rainbox.cpython-38.pyc
+src/__pycache__/NoisyLinear.cpython-38.pyc
+src/__pycache__/PrioritizedReplayBuffer.cpython-38.pyc
+src/__pycache__/ReplayBuffer.cpython-38.pyc
+src/__pycache__/ReplayBuffer.cpython-38.pyc
+src/__pycache__/segment_tree.cpython-38.pyc
+src/__pycache__/ReplayBuffer.cpython-38.pyc
+src/__pycache__/utils.cpython-38.pyc
+src/__pycache__/utils.cpython-311.pyc
