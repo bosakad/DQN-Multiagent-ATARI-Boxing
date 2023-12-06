@@ -176,7 +176,7 @@ class Atari_Agents:
         # add batch dimension - to be accepted by DQN
         state = state.unsqueeze(0) 
 
-        # select action based on the Q - TODO: eps greedy
+        # select action based on the Q
         if not random:
             for i, agent in enumerate(self.env.agents):  
                 
@@ -360,7 +360,7 @@ class Atari_Agents:
                     losses[i].append(loss)
                     update_cnt[i] += 1
                     
-                    # update each iteration - TODO: experiment
+                    # update each iteration - soft update
                     target_net_state_dict = self.dqn[i].state_dict()
                     policy_net_state_dict = self.dqn_target[i].state_dict()
                     for key in policy_net_state_dict:
@@ -369,7 +369,7 @@ class Atari_Agents:
 
                     # if hard update is needed - update the target network
                     if update_cnt[i] % self.target_update == 0:
-                        # self._target_hard_update(i) # TODO: experiment with soft update
+                        # self._target_hard_update(i) # NOTE: alternative to a soft update
 
                         # print out the frame progress from time to time
                         if i == 0:
@@ -555,7 +555,7 @@ class Atari_Agents:
             #     state = moveToCorners_random(self.env, self.device)
                 
 
-    def _target_hard_update(self, agent): # TODO: try concex combination of target and local instead?
+    def _target_hard_update(self, agent): 
         """Hard update: target <- local."""
         self.dqn_target[agent].load_state_dict(self.dqn[agent].state_dict()) 
            
