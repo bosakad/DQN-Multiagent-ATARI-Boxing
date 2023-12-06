@@ -223,11 +223,11 @@ class Atari_Agents:
         next_state = utils.getState(observations, self.device) # get state from the observations
         
         # discount the negative prices
-        for i,agent in enumerate(self.env.agents):
-            if rewards[agent] < 0:
-                rewards[agent] = 0.1
-            else:
-                rewards[agent] *= 1
+        # for i,agent in enumerate(self.env.agents):
+        #     if rewards[agent] < 0:
+        #         rewards[agent] = 0.1
+        #     else:
+        #         rewards[agent] *= 1
 
         # done = terminated or truncated
         done = terminations["first_0"] or truncations["first_0"]

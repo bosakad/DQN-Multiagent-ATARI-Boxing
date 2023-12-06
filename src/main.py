@@ -37,7 +37,7 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
     
     ############################################### parameters ###############################################
     
-    num_frames = 300_000
+    num_frames = 200_000
     memory_size = 6_000
     batch_size = 64
     target_update = 100
@@ -88,7 +88,7 @@ def train_boxing(init_buffer_fill = {"first_0": 0, "second_0": 0},
 
 def test_boxing(PATH, architectureTypes, randomization): # test boxing using saved models
 
-    env = boxing_v2.parallel_env(render_mode="human")
+    env = boxing_v2.parallel_env(auto_rom_install_path="../ROMS",render_mode="human")
     env = EnvPreprocess.preprocess_boxing(env, training=False)
 
     # define a suppport - might have to increase number of atoms
@@ -114,9 +114,9 @@ def test_boxing(PATH, architectureTypes, randomization): # test boxing using sav
 if __name__ == "__main__":
     
     # Comparison 1: replay buffer prefilling
-    # train_boxing(init_buffer_fill = {"first_0": 5000, "second_0": 0},  # initial buffer fill for each agent
-    #              architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
-    #              randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
+    train_boxing(init_buffer_fill = {"first_0": 5000, "second_0": 0},  # initial buffer fill for each agent
+                 architectureTypes = {"first_0": "small", "second_0": "small"}, # different architectures for different agents
+                 randomization = {"first_0": "noisy", "second_0": "noisy"}) # select the type of randomization for each agent
     
     # Comparison 2: Feature Extraction Enhancement
     # train_boxing(init_buffer_fill = {"first_0": 1600, "second_0": 1600},  # initial buffer fill for each agent
@@ -144,8 +144,8 @@ if __name__ == "__main__":
     #             randomization = {"first_0": "noisy", "second_0": "noisy"})
 
     # test the 1. comparison (replay buffer prefilling)
-    test_boxing("../results/models/1_VS_1/small_small_BF1-1600_BF2-1600.pt", 
-                 architectureTypes = {"first_0": "small", "second_0": "small"},
-                 randomization = {"first_0": "noisy", "second_0": "eps"})
+    # test_boxing("../results/models/1_VS_1/small_small_BF1-1600_BF2-1600.pt", 
+    #              architectureTypes = {"first_0": "small", "second_0": "small"},
+    #              randomization = {"first_0": "noisy", "second_0": "eps"})
 
 
